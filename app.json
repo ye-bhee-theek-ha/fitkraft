@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#2A3445"
     },
     "ios": {
       "supportsTablet": true
@@ -18,8 +18,14 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#2A3445"
+      },
+      "navigationBar": {
+      "visible": false,
+      "barStyle": "light-content",
+      "backgroundColor": "#212835"
+    },
+      "package": "com.aleeabdullah.fitkraft"
     },
     "web": {
       "bundler": "metro",

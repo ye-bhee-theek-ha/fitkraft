@@ -1,12 +1,15 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Slot, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { AuthProvider } from '@/context/auth';
+import { AppProvider } from '@/context/app';
+import { StatusBar } from 'expo-status-bar';
+
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -38,6 +41,8 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
+ 
+
   if (!loaded) {
     return null;
   }
@@ -46,14 +51,16 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ThemeProvider>
+    <>
+      <StatusBar style="light" />
+      <AuthProvider>
+        {/* <AppProvider> */}
+            <Slot/>
+        {/* </AppProvider> */}
+      </AuthProvider>
+    </>
+   
   );
 }
