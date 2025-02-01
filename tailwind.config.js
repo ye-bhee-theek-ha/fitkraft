@@ -19,6 +19,7 @@ module.exports = {
           
         },
         fontSize: {
+          "hero": "30px",
           "heading": "24px",
           'text': '20px',
           "btn_title": "18px",

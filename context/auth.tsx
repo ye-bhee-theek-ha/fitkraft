@@ -19,7 +19,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
     if (user === undefined) return;
 
     if (!user && rootSegment !== "(auth)") {
-      router.replace("/(auth)/login");
+      router.replace("/(setup)/setup");
     } else if (user) {
 
      
