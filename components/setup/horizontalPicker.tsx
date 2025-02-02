@@ -2,7 +2,7 @@ import React, { useRef, useState, forwardRef, useImperativeHandle } from 'react'
 import { View, Text, FlatList, Dimensions, Animated, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
 const { width } = Dimensions.get('window');
-const ITEM_WIDTH = width / 5;
+export const ITEM_WIDTH = width / 5;
 
 type HorizontalPickerProps = {
   data: Array<number>;

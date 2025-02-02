@@ -9,6 +9,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { AuthProvider } from '@/context/auth';
 import { AppProvider } from '@/context/app';
 import { StatusBar } from 'expo-status-bar';
+import React from 'react';
 
 
 export {

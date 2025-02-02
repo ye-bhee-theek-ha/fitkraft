@@ -19,19 +19,22 @@ const AgeSelect = () => {
     console.log('Selected Item:', selectedItem);
   };
 
-  let data = Array.from({ length: 100 }, (_, i) => i + 1);
-  // data = [0, 0, ...data, 0, 0]
+  let data = Array.from({ length: 20 }, (_, i) => i + 1);
+  data = [0, 0, ...data, 0, 0]
 
+  let data_height = Array.from({ length: 20 }, (_, i) => 
+    Array.from({ length: 10 }, (_, j) => j)
+  );
+  data_height = [[0], [0], ...data_height, [0], [0]]
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 
       <Text className='text-hero text-white w-[80%] text-center py-6'>What is your Age?</Text>
 
-      <View style={{height: 450}}>
-        <VerticalPicker ref={pickerRef} data={data}/>
+      <View style={{}} className='flex flex-1'>
+        <HorizontalPicker ref={pickerRef} data={data}/>
       </View>
-      <AppButton title="Get Selected Item" onPress={handleGetSelected} />
 
       {selectedValue !== null && (
         <Text style={{ marginTop: 20, fontSize: 18 }}>

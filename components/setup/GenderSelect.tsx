@@ -123,4 +123,4 @@ const GenderSelect = () => {
     );
 };
 
-export default GenderSelect
+export default GenderSelect;
