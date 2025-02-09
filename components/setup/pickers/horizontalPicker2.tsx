@@ -4,15 +4,15 @@ import { View, Text, FlatList, Dimensions, Animated, NativeScrollEvent, NativeSy
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = width / 5;
 
-type HorizontalPicker2Props = {
+type WeightSelectProps = {
   data: Array<number>;
 };
 
-export type HorizontalPicker2Ref = {
+export type WeightSelectRef = {
   getSelectedItem: () => number | null;
 };
 
-const HorizontalPicker2 = forwardRef<HorizontalPicker2Ref, HorizontalPicker2Props>(({ data }, ref) => {
+const WeightSelect = forwardRef<WeightSelectRef, WeightSelectProps>(({ data }, ref) => {
   const AnimatedFlatList = Animated.createAnimatedComponent(FlatList<number>);
   const x = useRef(new Animated.Value(0)).current;
   const scrollIndex = useRef<number>(0);
@@ -24,7 +24,7 @@ const HorizontalPicker2 = forwardRef<HorizontalPicker2Ref, HorizontalPicker2Prop
     getSelectedItem: () => scrollIndex.current,
   }));
 
-  const FlatlistItem = ({
+  const WeightSelect = ({
     weight,
     index,
     x,
@@ -208,4 +208,4 @@ const HorizontalPicker2 = forwardRef<HorizontalPicker2Ref, HorizontalPicker2Prop
   );
 });
 
-export default HorizontalPicker2;
+export default WeightSelect;

@@ -13,14 +13,14 @@ export default function ActivityLevelSelector({ selectedLevel, onLevelSelect }: 
   ]
 
   return (
-    <View className="flex flex-1 items-center">
-      <View className="px-6 items-center">
+    <View className="flex flex-1 items-center w-screen">
+      <View className="px-6 mb-8 mt-6 items-center">
         <Text className="text-white text-3xl font-semibold mb-4 text-center">Physical Activity Level</Text>
 
-        <Text className="text-gray-400 text-base mb-12 text-center">
+        {/* <Text className="text-gray-400 text-base mb-12 text-center">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
           magna aliqua.
-        </Text>
+        </Text> */}
       </View>
 
       <View className="space-y-8 bg-primary_dark w-full py-10 px-6">

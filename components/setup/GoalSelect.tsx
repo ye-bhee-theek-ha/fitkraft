@@ -7,7 +7,7 @@ interface GoalSelectProps {
 
 const GoalSelect = ({ selectedGoal, onGoalSelect }: GoalSelectProps) => {
   return (
-    <View className="flex flex-1 items-center">
+    <View className="flex flex-1 items-center w-screen">
 
       <View className="px-6 items-center">
         <Text className="text-white text-3xl font-semibold mb-4 text-center">What Is Your Goal?</Text>

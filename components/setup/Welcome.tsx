@@ -4,8 +4,8 @@ import { Text, View } from 'react-native';
 
 const WelcomeScreen = () => {
   return (
-    <View className='h-full justify-end'>
-      <View className='w-full items-center justify-center my-12'>
+    <View className='flex-1 justify-end w-screen'>
+      <View className='w-full items-center justify-center '>
         <Text className='text-hero text-white w-[80%] text-center py-6'>
           Consistency Is the Key To progress. Don't Give Up!
         </Text>

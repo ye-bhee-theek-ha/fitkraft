@@ -9,7 +9,7 @@ type HorizontalPickerProps = {
 };
 
 export type HorizontalPickerRef = {
-  getSelectedItem: () => number | null;
+  getSelectedItem: () => number;
 };
 
 const HorizontalPicker = forwardRef<HorizontalPickerRef, HorizontalPickerProps>(({ data }, ref) => {
@@ -98,7 +98,7 @@ const HorizontalPicker = forwardRef<HorizontalPickerRef, HorizontalPickerProps>(
         >
           <Text
             style={{
-              fontSize: 68,
+              fontSize: 60,
               color: 'white',
             }}
           >
@@ -113,7 +113,7 @@ const HorizontalPicker = forwardRef<HorizontalPickerRef, HorizontalPickerProps>(
           >
             <Text
               style={{
-                fontSize: 48,
+                fontSize: 40,
                 color: 'white',
               }}
             >
@@ -122,7 +122,7 @@ const HorizontalPicker = forwardRef<HorizontalPickerRef, HorizontalPickerProps>(
           </Animated.View>
 
           <View style={[{ width: ITEM_WIDTH }, {}]}
-            className='h-12  items-end flex flex-row justify-around'  
+            className='h-12 items-end flex flex-row justify-around'  
           >
             {lines.map((value, i) => {
               const isCenter = i === Math.floor(lines.length / 2);
@@ -176,6 +176,7 @@ const HorizontalPicker = forwardRef<HorizontalPickerRef, HorizontalPickerProps>(
           decelerationRate="fast"
           bounces={false}
           renderItem={({ item, index }) => <FlatlistItem weight={item} index={index} x={x} />}
+          showsHorizontalScrollIndicator= {false}
           
           onScroll={Animated.event(
             [
