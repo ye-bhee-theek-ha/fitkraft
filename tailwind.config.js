@@ -18,6 +18,7 @@ module.exports = {
           "error": "#FF6F61",
           "error_bg": "#FF9B91",
           "error_border": "#B82214",
+          "green": "#63F19E"
 
 
 
@@ -31,7 +32,9 @@ module.exports = {
           "btn_title": "18px",
           "medium": "16px",
           "small": "14px",
-          "extra_small": '12px'
+          "extra_small": '12px',
+          "icon_text": '10px'
+          
         },
         fontFamily: {
           'Display': ['"Oxygen Mono"', 'serif'],
