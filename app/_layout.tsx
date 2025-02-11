@@ -55,7 +55,7 @@ function RootLayoutNav() {
 
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style="light"/>
       <AuthProvider>
         {/* <AppProvider> */}
             <Slot/>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import "@/global.css";
 import { useAuth } from '@/context/auth';
 import AppButton from '@/components/Button';
-import { Text, View, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { Text, View, TextInput, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -84,7 +84,7 @@ export default function SignUpScreen() {
 
   return (
     <ScrollView>
-      <View className="items-center h-full my-12">
+      <SafeAreaView className="items-center h-full my-12">
         <Text className="text-white font-bold text-heading font-Display my-12">Sign Up</Text>
         
         <View className="bg-primary_dark rounded-xl py-6 w-full px-12">
@@ -195,7 +195,7 @@ export default function SignUpScreen() {
             <Text className="text-accent text-extra_small">Log In</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
     </ScrollView>
   );
 }

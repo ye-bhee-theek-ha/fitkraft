@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import "@/global.css";
 import { useAuth } from '@/context/auth';
 import AppButton from '@/components/Button';
-import { Text, View, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { Text, View, TextInput, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 
-export default function TabOneScreen() {
+export default function LoginScreen() {
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,7 +47,7 @@ export default function TabOneScreen() {
 
   return (
     <ScrollView>
-      <View className='flex flex-1 h-screen mb-8'>
+      <SafeAreaView className='flex flex-1 h-screen mb-8'>
         <View className='h-[30%] items-center justify-center'>
           <View className='h-24 w-24 mt-8 bg-primary_light rounded-lg'>
 
@@ -130,7 +130,7 @@ export default function TabOneScreen() {
           </View>
 
         </View>
-      </View>
+      </SafeAreaView>
     </ScrollView>
   );
 }
