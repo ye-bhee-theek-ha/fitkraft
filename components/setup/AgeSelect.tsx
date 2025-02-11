@@ -29,7 +29,6 @@ const AgeSelect = forwardRef<AgeSelectRef, AgeSelectProps>((_props, ref) => {
   const onMomentumScrollEnd = (event: any) => {
     const offsetX = event.nativeEvent.contentOffset.x;
     scrollIndex.current = Math.round(offsetX / ITEM_WIDTH);
-    console.log('Momentum scroll end, scrollIndex:', scrollIndex.current);
   };
 
   const FlatlistItem = ({

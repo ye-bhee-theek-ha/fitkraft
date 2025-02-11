@@ -15,7 +15,11 @@ module.exports = {
           "primary_light": "#687791",
           "button_bg": "#3D4656",
           "textInput_bg": "#e9e9e9",
-          "error": "#FF6F61"
+          "error": "#FF6F61",
+          "error_bg": "#FF9B91",
+          "error_border": "#B82214",
+
+
 
 
           

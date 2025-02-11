@@ -9,14 +9,13 @@ type WeightSelectProps = {
 };
 
 export type WeightSelectRef = {
-  getSelectedItem: () => number | null;
+  getSelectedItem: () => { whole: number; fraction: number } | null;
 };
 
 const WeightSelect = forwardRef<WeightSelectRef, WeightSelectProps>(({ data = Array.from({ length: 81 }, (_, i) => i + 40) }, ref) => {
   const AnimatedFlatList = Animated.createAnimatedComponent(FlatList<number>);
   const x = useRef(new Animated.Value(0)).current;
-  const scrollIndex = useRef<number>(0);
-
+  const scrollIndex = useRef<{ whole: number; fraction: number }>({ whole: 0, fraction: 0 });
 
   // Expose function to get the selected item
   useImperativeHandle(ref, () => ({
@@ -39,6 +38,14 @@ const WeightSelect = forwardRef<WeightSelectRef, WeightSelectProps>(({ data = Ar
     const isAppearing = width;
 
     const lines = [0.5, 0.5, 1.5, 0.5, 0.5]
+
+    // const in_block_position = Animated.divide(position, ITEM_WIDTH);
+
+    // const floating_point = Animated.divide(in_block_position, ITEM_WIDTH/5)
+    // const float = floating_point.interpolate({
+    //   inputRange: [0,4],
+    //   outputRange: ["0", "4"],
+    // });
 
     const translateX = Animated.add(
       x,
@@ -78,23 +85,27 @@ const WeightSelect = forwardRef<WeightSelectRef, WeightSelectProps>(({ data = Ar
     });
 
     const opacity_head = position.interpolate({
-      inputRange: [IsDissapearing, isTop + ITEM_WIDTH + ((ITEM_WIDTH/3)), ITEM_WIDTH * 2, isBottom - ITEM_WIDTH - ((ITEM_WIDTH/3)), isAppearing],
-      outputRange: [0, 0, 1, 0, 0],
+      inputRange: [0,ITEM_WIDTH*1, ITEM_WIDTH*1+.1, ITEM_WIDTH*2, ITEM_WIDTH*2+.1, width],
+      outputRange: [0, 0, 1, 1, 0, 0 ],
     });
 
-    const scale_head = position.interpolate({
-      inputRange: [IsDissapearing, isTop + ITEM_WIDTH + ((ITEM_WIDTH/3)), ITEM_WIDTH * 2, isBottom - ITEM_WIDTH - ((ITEM_WIDTH/3)), isAppearing],
-      outputRange: [0.5, 0.5, 1, 0.5, 0.5],
-    });
+    // const scale_head = position.interpolate({
+    //   inputRange: [IsDissapearing, isTop + ITEM_WIDTH + ((ITEM_WIDTH/3)), ITEM_WIDTH * 2, isBottom - ITEM_WIDTH - ((ITEM_WIDTH/3)), isAppearing],
+    //   outputRange: [0.5, 0.5, 1, 0.5, 0.5],
+    // });
     
     const Y_Offset_head = position.interpolate({
       inputRange: [IsDissapearing, isTop + ITEM_WIDTH + ((ITEM_WIDTH/3)), ITEM_WIDTH * 2, isBottom - ITEM_WIDTH - ((ITEM_WIDTH/3)), isAppearing],
-      outputRange: [-10, -10, 0, -10, -10],
+      outputRange: [-50, -30, 40, -30, -50],
+    });
+    const X_Offset_head = position.interpolate({
+      inputRange: [0,ITEM_WIDTH, ITEM_WIDTH*2-5, width/2, ITEM_WIDTH*3+5, width],
+      outputRange: [-5000, ITEM_WIDTH, 0, 0, -ITEM_WIDTH, 5000 ],
     });
 
     return (
       
-      <View className='h-full justify-evenly'>
+      <View className='justify-evenly '>
         <View className=''>
           <Animated.View
             style={[{ width: ITEM_WIDTH }, { opacity, transform: [{ translateX }, {translateY: Y_Offset_text }, { scale }] }]}
@@ -112,7 +123,7 @@ const WeightSelect = forwardRef<WeightSelectRef, WeightSelectProps>(({ data = Ar
 
 
           <View style={[{ width: ITEM_WIDTH }, {}]}
-            className=' bg-primary_light py-10 flex-1 flex flex-row items-center justify-around'  
+            className=' bg-primary_light py-10 flex flex-row items-center justify-around'  
           >
             {lines.map((value, i) => {
               const isCenter = i === Math.floor(lines.length / 2);
@@ -133,14 +144,15 @@ const WeightSelect = forwardRef<WeightSelectRef, WeightSelectProps>(({ data = Ar
               )
               })} 
           </View>
-        </View>
-        <View
-          className='h-24'
-        >
 
         </View>
         <Animated.View
-          style={[{ width: ITEM_WIDTH }, { opacity: opacity_head, transform: [{translateY: Y_Offset_head }, { scale: scale_head }] }]}
+          style={[{ width: ITEM_WIDTH },
+            { 
+              opacity:opacity_head,
+              transform: [{translateY: Y_Offset_head }, {translateX: X_Offset_head }] 
+            }
+          ]}
           className="rounded-lg items-center my-2 flex-nowrap"
         >
           <Text
@@ -158,31 +170,46 @@ const WeightSelect = forwardRef<WeightSelectRef, WeightSelectProps>(({ data = Ar
     );
   };
 
-
-
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    scrollIndex.current = Math.round(event.nativeEvent.contentOffset.x / ITEM_WIDTH);
-    
-  }
-
+    const offsetX = event.nativeEvent.contentOffset.x;
+    scrollIndex.current.whole = Math.floor(offsetX / ITEM_WIDTH);
+    scrollIndex.current.fraction = Math.round((offsetX % ITEM_WIDTH) / (ITEM_WIDTH / 10));
+  };
 
   const handleScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     console.log('Scroll Index:', scrollIndex.current);
   };
-  
-
 
   return (
     <View
-      className="w-screen"
+      className="w-screen h-full"
       style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
     >
       <Text className="text-hero text-white w-[80%] text-center py-6">
         How much do you weigh?
       </Text>
 
-      <View className="w-full h-fit items-center justify-center">
-        <View className="h-full">
+      <View className="relative w-full flex flex-1 items-center justify-center">
+
+        <View className='absolute bottom-5 right-24 z-10 w-10 h-20 flex flex-row'>
+          <View className='w-2 rounded-l-full h-full bg-white'>
+          </View>
+          <View className='flex flex-col justify-between w-1/2'>
+            <View className='w-full rounded-r-full h-1 bg-white'/>
+            <View className='w-1/2 rounded-r-full h-1 bg-white opacity-50'/>
+            <View className='w-full rounded-r-full h-1 bg-white'/>
+            <View className='w-1/2 rounded-r-full h-1 bg-white opacity-50'/>
+            <View className='w-full rounded-r-full h-1 bg-white'/>
+          </View>
+          <View className='flex flex-col justify-between items-center w-1/2'>
+            <Text className='text-white text-xs h-0'></Text>
+            <Text className='text-white text-xs'>.75</Text>
+            <Text className='text-white text-xs'>.5</Text>
+            <Text className='text-white text-xs'>.25</Text>
+            <Text className='text-white text-xs'>.0</Text>
+          </View>
+        </View>
+        <View className="">
           <AnimatedFlatList
             getItemLayout={(data, index) => (
                 {length: Dimensions.get('window').width / 5, offset: Dimensions.get('window').width / 5 * index, index}   
@@ -191,7 +218,7 @@ const WeightSelect = forwardRef<WeightSelectRef, WeightSelectProps>(({ data = Ar
             className=""
             data={data}
             horizontal
-            snapToInterval={ITEM_WIDTH}
+            snapToInterval={ITEM_WIDTH / 5}
             decelerationRate="fast"
             bounces={false}
             renderItem={({ item, index }) => <FlatlistItem weight={item} index={index} x={x} />}
@@ -210,6 +237,7 @@ const WeightSelect = forwardRef<WeightSelectRef, WeightSelectProps>(({ data = Ar
               }
             )}
             onMomentumScrollEnd={handleScrollEnd}
+            showsHorizontalScrollIndicator={false}
           />
         </View>
       </View>
