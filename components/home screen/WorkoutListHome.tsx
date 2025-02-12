@@ -29,7 +29,7 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ workouts }) => {
 
   return (
     <View className="bg-primary_dark p-3 rounded-3xl">
-        <View className="flex-row items-center m-2 mb-3">
+        <View className="flex-row items-center m-2 mb-2 mt-0">
             <Ionicons name="barbell-outline" size={24} color="white" style={{ transform: [{ rotate: '45deg' }] }} />
             <Text className="text-white text-text font-semibold ml-2">Workout</Text>
         </View>
