@@ -3,7 +3,7 @@ import type React from "react"
 import { View, Text, Pressable, SafeAreaView } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 
-export type Section = "Workout" | "Dietary" | "Mental Wellness" | "home";
+export type Section = "Workout" | "Dietary" | "Mental Wellness" | "Home";
 
 interface HeaderProps {
   username: string

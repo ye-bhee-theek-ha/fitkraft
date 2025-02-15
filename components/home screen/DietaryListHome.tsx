@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { View, Text, ScrollView, Animated, Pressable } from "react-native"
+import { View, Text, Animated, Pressable } from "react-native"
 import AntDesign from "@expo/vector-icons/AntDesign"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons"
@@ -9,6 +9,7 @@ import Feather from "@expo/vector-icons/Feather"
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6"
 import { LinearGradient } from "expo-linear-gradient"
 import { useRef, useState, useEffect } from "react"
+import {ScrollView} from "react-native-gesture-handler"
 
 interface DietaryItem {
   name: string
