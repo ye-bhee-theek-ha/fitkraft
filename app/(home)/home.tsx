@@ -6,13 +6,66 @@ import DietaryList from "@/components/home screen/DietaryListHome"
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated"
 import { Gesture, GestureDetector, GestureHandlerRootView, ScrollView } from "react-native-gesture-handler"
 import { BarChart } from "react-native-gifted-charts"
-
-type Section = "Home" | "Workout" | "Dietary"
+import { DietaryItem } from "@/constants/types"
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window")
 
-export default function Home() {
-  const [currentSection, setCurrentSection] = useState<Section>("Home")
+export const DietaryData: DietaryItem[] = [
+  {
+    name: "Oatmeal with Fruits",
+    time_name: "breakfast",
+    time: "07:30",
+    fats: 5,
+    proteins: 10,
+    carbohydrates: 30,
+    completed: true,
+  },
+  {
+    name: "Chicken Salad",
+    time_name: "lunch",
+    time: "12:30",
+    fats: 15,
+    proteins: 25,
+    carbohydrates: 10,
+    completed: false,
+  },
+  {
+    name: "Protein Shake",
+    time_name: "pre-workout",
+    fats: 2,
+    proteins: 20,
+    carbohydrates: 5,
+    completed: false,
+  },
+  {
+    name: "Grilled Salmon",
+    time_name: "dinner",
+    time: "19:30",
+    fats: 20,
+    proteins: 30,
+    carbohydrates: 0,
+    completed: true,
+  },
+  {
+    name: "Greek Yogurt",
+    time_name: "snack",
+    time: "10:30",
+    fats: 3,
+    proteins: 15,
+    carbohydrates: 8,
+    completed: true,
+  },
+  {
+    name: "Recovery Smoothie",
+    time_name: "post-workout",
+    fats: 4,
+    proteins: 25,
+    carbohydrates: 35,
+    completed: false,
+  },
+]
+
+const Home = () => {
 
   const translateX = useSharedValue(0)
 
@@ -35,22 +88,6 @@ export default function Home() {
       transform: [{ translateX: translateX.value }],
     }
   })
-
-  const handleSectionChange = (section: Section) => {
-    currentSection === section ? setCurrentSection("Home") : setCurrentSection(section)
-  }
-
-  const handleSearchPress = () => {
-    console.log("Search pressed")
-  }
-
-  const handleNotificationPress = () => {
-    console.log("Notifications pressed")
-  }
-
-  const handleProfilePress = () => {
-    console.log("Profile pressed")
-  }
 
   const workoutData = [
     {
@@ -83,41 +120,6 @@ export default function Home() {
     },
   ]
 
-  const DietaryData = [
-    {
-      name: "Oatmeal with Fruits",
-      time: "breakfast",
-      fats: 5,
-      proteins: 10,
-      carbohydrates: 30,
-      completed: true,
-    },
-    {
-      name: "Chicken Salad",
-      time: "lunch",
-      fats: 15,
-      proteins: 25,
-      carbohydrates: 10,
-      completed: false,
-    },
-    {
-      name: "Protein Shake",
-      time: "pre-workout",
-      fats: 2,
-      proteins: 20,
-      carbohydrates: 5,
-      completed: false,
-    },
-    {
-      name: "Grilled Salmon",
-      time: "dinner",
-      fats: 20,
-      proteins: 30,
-      carbohydrates: 0,
-      completed: true,
-    },
-  ]
-
   const data = [
     { value: 2500, frontColor: "#006DFF", gradientColor: "#009FFF", spacing: 6, label: "Jan" },
     { value: 2400, frontColor: "#3BE9DE", gradientColor: "#93FCF8" },
@@ -142,12 +144,11 @@ export default function Home() {
   ]
 
   return (
-    <GestureHandlerRootView>
       <ScrollView className="flex-1">
           <View>
             <View className="w-full flex items-center">
               <GestureDetector gesture={panGesture}>
-                <Animated.View className="w-[90%] flex-row my-6" style={animatedStyle}>
+                <Animated.View className="w-[90%] flex-row mb-6" style={animatedStyle}>
                   <View className="w-full">
                     <DietaryList diets={DietaryData} />
                   </View>
@@ -190,7 +191,8 @@ export default function Home() {
             </View>
           </View>
       </ScrollView>
-    </GestureHandlerRootView>
   )
 }
 
+
+export default Home

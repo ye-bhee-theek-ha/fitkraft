@@ -1,171 +1,233 @@
 "use client"
 
-import { useEffect } from "react"
-import { View, Text, BackHandler, TouchableOpacity } from "react-native"
-import { router } from "expo-router"
-import { ScrollView } from "react-native-gesture-handler"
+import { useEffect, useMemo } from "react"
+import { View, Text, BackHandler, ScrollView } from "react-native"
+import { router, useFocusEffect } from "expo-router"
+import type { WorkoutData, WorkoutDayProgress } from "@/constants/types"
+import TasksList from "@/components/workout screen/TasksList"
+import ProgressList from "@/components/workout screen/ProgressList"
 
-interface WorkoutTask {
-  id: string
-  name: string
-  duration: string
-  repetitions: string
-  completed?: boolean
-}
-
-interface DayProgress {
-  date: number
-  day: string
-  current?: boolean
-}
-
-const todayTasks: WorkoutTask[] = [
+const workoutDataHistory: WorkoutData[] = [
   {
-    id: "1",
-    name: "Dumbbell Rows",
-    duration: "00:30",
-    repetitions: "Repetition 3x",
+    date: "2023-05-01",
+    userID: "user1",
+    Exercises: [
+      {
+        name: "Dumbbell Rows",
+        duration: { minutes: 4, seconds: 15 },
+        repetitions: 5,
+        completed: true,
+        caloriesBurned: 235,
+      },
+      {
+        name: "Russian Twists",
+        duration: { minutes: 2, seconds: 30 },
+        repetitions: 3,
+        completed: false,
+        caloriesBurned: 45,
+      },
+      {
+        name: "Squats",
+        duration: { minutes: 0, seconds: 30 },
+        repetitions: 3,
+        completed: true,
+        caloriesBurned: 45,
+      },
+    ],
   },
   {
-    id: "2",
-    name: "Russian Twists",
-    duration: "00:15",
-    repetitions: "Repetition 2x",
-    completed: true,
+    date: "2023-05-02",
+    userID: "user1",
+    Exercises: [
+      {
+        name: "Push Ups",
+        duration: { minutes: 3, seconds: 0 },
+        repetitions: 4,
+        completed: true,
+        caloriesBurned: 150,
+      },
+      {
+        name: "Plank",
+        duration: { minutes: 1, seconds: 30 },
+        repetitions: 2,
+        completed: true,
+        caloriesBurned: 50,
+      },
+      {
+        name: "Lunges",
+        duration: { minutes: 2, seconds: 0 },
+        repetitions: 3,
+        completed: false,
+        caloriesBurned: 100,
+      },
+    ],
   },
   {
-    id: "3",
-    name: "Squats",
-    duration: "00:15",
-    repetitions: "Repetition 2x",
-  },
-]
-
-const weekProgress: DayProgress[] = [
-  { date: 19, day: "MON", current: true },
-  { date: 18, day: "TUE" },
-  { date: 17, day: "WED" },
-  { date: 16, day: "THU" },
-  { date: 15, day: "FRI" },
-  { date: 14, day: "SAT" },
-  { date: 13, day: "SUN" },
-]
-
-const progressTasks: WorkoutTask[] = [
-  {
-    id: "1",
-    name: "Dumbbell Rows",
-    duration: "00:30",
-    repetitions: "Repetition 3x",
-    completed: true,
-  },
-  {
-    id: "2",
-    name: "Dumbbell Rows",
-    duration: "00:30",
-    repetitions: "Repetition 3x",
-    completed: true,
+    date: "2023-05-03",
+    userID: "user1",
+    Exercises: [
+      {
+        name: "Bicep Curls",
+        duration: { minutes: 2, seconds: 45 },
+        repetitions: 4,
+        completed: true,
+        caloriesBurned: 120,
+      },
+      {
+        name: "Tricep Dips",
+        duration: { minutes: 2, seconds: 15 },
+        repetitions: 3,
+        completed: false,
+        caloriesBurned: 80,
+      },
+      {
+        name: "Jumping Jacks",
+        duration: { minutes: 1, seconds: 30 },
+        repetitions: 3,
+        completed: true,
+        caloriesBurned: 60,
+      },
+    ],
   },
   {
-    id: "3",
-    name: "Dumbbell Rows",
-    duration: "00:30",
-    repetitions: "Repetition 3x",
-    completed: true,
+    date: "2023-05-04",
+    userID: "user1",
+    Exercises: [
+      {
+        name: "Bench Press",
+        duration: { minutes: 3, seconds: 30 },
+        repetitions: 4,
+        completed: true,
+        caloriesBurned: 200,
+      },
+      {
+        name: "Deadlifts",
+        duration: { minutes: 4, seconds: 0 },
+        repetitions: 3,
+        completed: false,
+        caloriesBurned: 250,
+      },
+      {
+        name: "Burpees",
+        duration: { minutes: 2, seconds: 0 },
+        repetitions: 3,
+        completed: true,
+        caloriesBurned: 100,
+      },
+    ],
+  },
+  {
+    date: "2023-05-05",
+    userID: "user1",
+    Exercises: [
+      {
+        name: "Pull Ups",
+        duration: { minutes: 2, seconds: 30 },
+        repetitions: 4,
+        completed: true,
+        caloriesBurned: 180,
+      },
+      {
+        name: "Mountain Climbers",
+        duration: { minutes: 1, seconds: 45 },
+        repetitions: 3,
+        completed: false,
+        caloriesBurned: 90,
+      },
+      {
+        name: "Leg Raises",
+        duration: { minutes: 2, seconds: 15 },
+        repetitions: 3,
+        completed: true,
+        caloriesBurned: 70,
+      },
+    ],
+  },
+  {
+    date: "2023-05-06",
+    userID: "user1",
+    Exercises: [
+      {
+        name: "Sit Ups",
+        duration: { minutes: 3, seconds: 0 },
+        repetitions: 4,
+        completed: true,
+        caloriesBurned: 140,
+      },
+      {
+        name: "High Knees",
+        duration: { minutes: 2, seconds: 30 },
+        repetitions: 3,
+        completed: false,
+        caloriesBurned: 110,
+      },
+      {
+        name: "Side Plank",
+        duration: { minutes: 1, seconds: 30 },
+        repetitions: 2,
+        completed: true,
+        caloriesBurned: 60,
+      },
+    ],
+  },
+  {
+    date: "2023-05-07",
+    userID: "user1",
+    Exercises: [
+      {
+        name: "Chest Fly",
+        duration: { minutes: 3, seconds: 15 },
+        repetitions: 4,
+        completed: true,
+        caloriesBurned: 160,
+      },
+      {
+        name: "Leg Press",
+        duration: { minutes: 4, seconds: 0 },
+        repetitions: 3,
+        completed: false,
+        caloriesBurned: 220,
+      },
+      {
+        name: "Bicycle Crunches",
+        duration: { minutes: 2, seconds: 0 },
+        repetitions: 3,
+        completed: true,
+        caloriesBurned: 90,
+      },
+    ],
   },
 ]
 
 export default function WorkoutScreen() {
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
-      router.push("/(home)/home")
-      return true
-    })
+  // useFocusEffect(() => {
+  //   router.setParams({ section: "Workout" as Section })
+  // })
 
-    return () => backHandler.remove()
-  }, [])
+  // useEffect(() => {
+  //   const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+  //     router.push("/home")
+  //     return true
+  //   })
+
+  //   return () => backHandler.remove()
+  // }, [])
+
+
+  const currentDate = useMemo(() => new Date(), [])
+
 
   return (
     <ScrollView className="flex-1">
-      <View className="px-6">
+      <View className="px-4">
         <View className="mb-8">
           <Text className="text-white text-2xl font-bold mb-4">Tasks Today</Text>
-          <View className="space-y-3">
-            {todayTasks.map((task) => (
-              <View key={task.id} className="bg-primary_dark/50 rounded-2xl p-4 flex-row items-center justify-between">
-                <View className="flex-row items-center flex-1">
-                  <TouchableOpacity
-                    className={`w-12 h-12 rounded-full items-center justify-center ${
-                      task.completed ? "bg-green" : "bg-primary_light"
-                    }`}
-                  >
-                    {/* {task.completed ? <Check size={24} color="white" /> : <Play size={24} color="white" fill="white" />} */}
-                  </TouchableOpacity>
-                  <View className="ml-4 flex-1">
-                    <Text className="text-white text-lg font-semibold">{task.name}</Text>
-                    <View className="flex-row items-center mt-1">
-                      <Text className="text-gray-400">
-                        <Text className="text-gray-400">⏱ {task.duration}</Text>
-                      </Text>
-                    </View>
-                  </View>
-                  <View className="items-end">
-                    <View className="bg-white/10 px-2 py-1 rounded-md">
-                      <Text className="text-white text-xs">🔥</Text>
-                    </View>
-                    <Text className="text-gray-400 text-sm mt-1">{task.repetitions}</Text>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </View>
+          <TasksList workouts={workoutDataHistory[0].Exercises} />
         </View>
 
         <View>
           <Text className="text-white text-2xl font-bold mb-4">Progress Tracking</Text>
-          <View className="bg-primary_dark/50 rounded-2xl p-4">
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View className="flex-row space-x-4">
-                {weekProgress.map((day, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    className={`items-center justify-center w-14 h-14 rounded-full ${
-                      day.current ? "bg-white" : "border border-white/20"
-                    }`}
-                  >
-                    <Text className={`text-xs font-medium ${day.current ? "text-primary" : "text-gray-400"}`}>
-                      {day.day}
-                    </Text>
-                    <Text className={`text-base font-bold ${day.current ? "text-primary" : "text-white"}`}>
-                      {day.date}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
-
-            <View className="mt-4 space-y-3">
-              {progressTasks.map((task, index) => (
-                <View key={index} className="flex-row items-center justify-between">
-                  <View className="flex-row items-center flex-1">
-                    <View className={`w-2 h-8 rounded-full mr-4 ${index % 2 === 0 ? "bg-green" : "bg-error"}`} />
-                    <View className="flex-1">
-                      <Text className="text-white font-medium">{task.name}</Text>
-                      <Text className="text-gray-400 text-sm">⏱ {task.duration}</Text>
-                    </View>
-                    <View className="flex-row space-x-2">
-                      <View className="bg-white/10 px-2 py-1 rounded-md">
-                        {/* <Check size={12} color="#63F19E" /> */}
-                      </View>
-                      <View className="bg-white/10 px-2 py-1 rounded-md">
-                        <Text className="text-white text-xs">🔥</Text>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
+          <ProgressList WorkoutDataHistory={workoutDataHistory} currentDate={currentDate} />
         </View>
       </View>
     </ScrollView>

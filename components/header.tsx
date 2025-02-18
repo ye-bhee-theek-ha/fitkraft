@@ -2,17 +2,9 @@
 import type React from "react"
 import { View, Text, Pressable, SafeAreaView } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
+import { HeaderProps, Section } from "@/constants/types"
 
-export type Section = "Workout" | "Dietary" | "Mental Wellness" | "Home";
 
-interface HeaderProps {
-  username: string
-  currentSection: Section
-  onSectionChange: (section: Section) => void
-  onSearchPress: () => void
-  onNotificationPress: () => void
-  onProfilePress: () => void
-}
 
 const Header: React.FC<HeaderProps> = ({
   username,
@@ -40,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({
   }
 
   return (
-    <SafeAreaView className="mt-12 px-6 pb-6">
+    <SafeAreaView className="mt-6 px-6 pb-6">
       {/* Header Content */}
       <View className="flex-row justify-between items-start mb-6">
         <View className="">

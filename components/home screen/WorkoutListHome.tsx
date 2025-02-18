@@ -5,20 +5,8 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { LinearGradient } from "expo-linear-gradient"
 import {ScrollView} from 'react-native-gesture-handler'
-interface WorkoutItem {
-  name: string
-  duration: {
-    minutes: number
-    seconds: number
-  }
-  repetitions: number
-  completed: boolean
-  caloriesBurned: number
-}
+import { WorkoutListProps } from "@/constants/types";
 
-interface WorkoutListProps {
-  workouts: WorkoutItem[]
-}
 
 const WorkoutList: React.FC<WorkoutListProps> = ({ workouts }) => {
   const formatDuration = (duration: { minutes: number; seconds: number }) => {
@@ -55,7 +43,7 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ workouts }) => {
                                 <Text className="text-gray-400 text-sm ml-1">{formatDuration(workout.duration)}</Text>
                             </View>
                         </View>
-                        </View>
+                    </View>
 
                         <View className="flex-col items-start">
                             <View className="flex-row">

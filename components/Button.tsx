@@ -2,18 +2,9 @@ import React from 'react';
 import { TouchableOpacity, Text } from 'react-native';
 import LoadingSpinner from './LoadingSpinner';
 import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
+import { AppButtonProps } from '@/constants/types';
 
 
-interface AppButtonProps {
-  title: string;
-  onPress?: () => void;
-  class_Name?: string;
-  textClassName?: string;
-  Loading?: boolean;
-  spinnerSize?: number;
-  spinnerColor?: string;
-  spinnerStyle?: object;
-}
 
 const AppButton: React.FC<AppButtonProps> = ({
   title,

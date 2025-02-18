@@ -10,25 +10,8 @@ import FontAwesome6 from "@expo/vector-icons/FontAwesome6"
 import { LinearGradient } from "expo-linear-gradient"
 import { useRef, useState, useEffect } from "react"
 import {ScrollView} from "react-native-gesture-handler"
-
-interface DietaryItem {
-  name: string
-  time: string
-  fats?: number
-  proteins?: number
-  carbohydrates?: number
-  completed: boolean
-}
-
-interface DietaryListProps {
-  diets: DietaryItem[]
-}
-
-interface TooltipState {
-  visible: boolean
-  text: string
-  index: number
-}
+import { DietaryListProps, TooltipState } from "@/constants/types"
+import { Ionicons } from "@expo/vector-icons"
 
 const DietaryList: React.FC<DietaryListProps> = ({ diets }) => {
   const [tooltip, setTooltip] = useState<TooltipState>({ visible: false, text: "", index: -1 })
@@ -106,11 +89,11 @@ const DietaryList: React.FC<DietaryListProps> = ({ diets }) => {
           {diets.map((diet, index) => (
             <View key={index} className="flex-row h-16 items-center justify-between p-3 mb-1 rounded-lg">
               <View className="flex-row items-center flex-1 h-full">
-                <View className="h-full flex justify-end flex-col mr-2">{GetIconForTime(diet.time)}</View>
+                <View className="h-full flex justify-end flex-col mr-2">{GetIconForTime(diet.time_name)}</View>
 
                 <View className="flex-1">
                   <View className="flex-row justify-between mb-1">
-                    <Text className="text-gray-400 font-semibold text-medium ml-2">{diet.time}</Text>
+                    <Text className="text-gray-400 font-semibold text-medium ml-2">{diet.time_name}</Text>
 
                     <View className="flex-row">
                       {diet.completed && (

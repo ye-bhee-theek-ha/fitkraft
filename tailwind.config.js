@@ -18,7 +18,10 @@ module.exports = {
           "error": "#FF6F61",
           "error_bg": "#FF9B91",
           "error_border": "#B82214",
-          "green": "#63F19E"
+          "green": "#63F19E",
+          "error_subtle": "#6E4246",
+          "green_subtle": "#25383D",
+
 
 
 
