@@ -28,6 +28,7 @@ import Animated, {
 } from "react-native-reanimated";
 import type { DietaryItem, DietaryTimeInterfaceProps, MealTimeName, TooltipState } from "@/constants/types";
 import EditMealModal from "./EditMealModal"
+import { LinearGradient } from "expo-linear-gradient";
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
@@ -210,41 +211,62 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
   }, [selectedMealIndex]);
  
   // A new component for the meal icon on the semicircle.
-  const MealIcon = ({ time, time_name, coordinates, completed, index }: {time: string; time_name: MealTimeName; coordinates:{ x: number; y: number }; completed: boolean ;index: number }) => {
+  const MealIcon = ({
+    time,
+    time_name,
+    coordinates,
+    completed,
+    index,
+  }: {
+    time: string
+    time_name: MealTimeName
+    coordinates: { x: number; y: number }
+    completed: boolean
+    index: number
+  }) => {
     const animatedIconStyle = useAnimatedStyle(() => {
-      const isSelected = selectedIndexSV.value === index;
+      const isSelected = selectedIndexSV.value === index
       return {
         transform: [{ scale: isSelected ? withTiming(1.2, { duration: 200 }) : withTiming(1, { duration: 200 }) }],
         zIndex: isSelected ? 999 : 1,
-      };
-    });
-  
-    let bgColorClass = "";
+      }
+    })
+
+    let bgColorClass = ""
     if (time_name !== "workout") {
-      const currentMins = currentTime.getHours() * 60 + currentTime.getMinutes();
-      const [mealH, mealM] = time.split(":").map(Number);
-      const mealMins = mealH * 60 + mealM;
-      if (mealMins < currentMins) {
-        bgColorClass = completed ? "bg-green_subtle" : "bg-error_subtle";
+      const currentMins = currentTime.getHours() * 60 + currentTime.getMinutes()
+      const [mealH, mealM] = time.split(":").map(Number)
+      const mealMins = mealH * 60 + mealM
+
+      // Parse WorkoutTime
+      const [workoutH, workoutM] = (WorkoutTime || "").split(":").map(Number)
+      const workoutMins = workoutH * 60 + workoutM
+
+      if (time_name === "pre-workout") {
+        bgColorClass = currentMins < workoutMins ? "bg-primary_dark" : completed ? "bg-green_subtle" : "bg-error_subtle"
+      } else if (time_name === "post-workout") {
+        bgColorClass = currentMins < workoutMins ? "bg-primary_dark" : completed ? "bg-green_subtle" : "bg-error_subtle"
       } else {
-        bgColorClass = "bg-primary_dark";
+        bgColorClass = currentMins < mealMins ? "bg-primary_dark" : completed ? "bg-green_subtle" : "bg-error_subtle"
       }
     }
-  
+
     return (
       <Animated.View
         style={[{ left: coordinates.x - 20, top: coordinates.y - 20 }, animatedIconStyle]}
         className="absolute w-12 h-12 items-center justify-center"
       >
-         <TouchableOpacity onPress={() => handleMealIconPress(index)} disabled={time_name === "workout"}>
-          <View className={time_name !== "workout" ? `${bgColorClass} border-2 border-white/20 rounded-full p-2` : ""}>
+        <TouchableOpacity onPress={() => handleMealIconPress(index)} disabled={time_name === "workout"}>
+          <View
+            className={`${time_name !== "workout" ? `${bgColorClass} border-2 border-white/20 rounded-full p-2` : ""}`}
+          >
             {getIconForTime(time_name, selectedMealIndex === index)}
           </View>
         </TouchableOpacity>
       </Animated.View>
-    );
-  };
-  
+    )
+  }
+
   const renderMealItem = useCallback(
     ({ item: diet, index }: { item: DietaryItem & { x: number; y: number }; index: number }) => (
       <View key={index} style={{ width: ITEM_WIDTH }}>
@@ -316,8 +338,8 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
   const [editingMeal, setEditingMeal] = useState<DietaryItem | null>(null)
 
 
-  const handleEditMealPress = useCallback((meal: DietaryItem) => {
-    setEditingMeal(meal)
+  const handleEditMealPress = useCallback((meal?: DietaryItem) => {
+    meal && setEditingMeal(meal)
     setIsEditModalVisible(true)
   }, [])
 
@@ -337,8 +359,14 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
 
   return (
     <View className="bg-primary_dark rounded-3xl p-2 py-4">
-      <Text className="text-white text-2xl font-semibold mb-2">Meal Schedule</Text>
+      <Text className="text-white text-2xl font-semibold pl-3 m-2">Meal Schedule</Text>
       <View className="items-center justify-center w-full aspect-[3/2] border-2 border-white/20 rounded-lg rounded-b-3xl overflow-hidden">
+        <LinearGradient
+              colors={['rgba(255,255,255,0)','rgba(255,255,255,0.01)', 'rgba(255,255,255,0.1)']}
+              locations={[0,.5,1]}
+              style={{ flex: 1, borderRadius: 15}}
+              className="absolute bottom-0 left-0 h-full w-full"
+          />
         <Svg height="100%" width="100%" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}>
           <Defs>
             <Mask id="mask">
@@ -418,18 +446,22 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
           <Text className="text-white font-semibold text-lg">Mark Done</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={onAddCustom}
-          className="flex-1 bg-white/10 border border-white/20 rounded-full py-3 items-center"
+          onPress={() => {handleEditMealPress()}}
+          className="flex bg-white/10 border border-white/20 rounded-full p-2 items-center"
         >
-          <Text className="text-white font-semibold text-lg">Add Custom</Text>
+          {/* <Text className="text-white font-semibold text-lg">Add Custom</Text> */}
+          <MaterialIcons name="add-circle" size={36} color="white" />
         </TouchableOpacity>
       </View>
+
+      
       {editingMeal && (
         <EditMealModal
           isVisible={isEditModalVisible}
           onClose={() => handleEditMealClosePress() }
           onSave={handleSaveEditedMeal}
           meal={editingMeal}
+          isAdding={editingMeal ? false : true}
         />
       )}
     </View>
@@ -437,3 +469,84 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
 };
 
 export default MealTimer;
+
+
+//   {
+//     carbohydrates: 30,
+//     completed: true,
+//     computedTime: "07:30",
+//     fats: 5,
+//     name: "Oatmeal with Fruits",
+//     proteins: 10,
+//     time: "07:30",
+//     time_name: "breakfast",
+//     x: 25,
+//     y: 170.99999999999997,
+//   },
+//   {
+//     carbohydrates: 8,
+//     completed: true,
+//     computedTime: "10:30",
+//     fats: 3,
+//     name: "Greek Yogurt",
+//     proteins: 15,
+//     time: "10:30",
+//     time_name: "snack",
+//     x: 61.90454557049502,
+//     y: 74.83347775862953,
+//   },
+//   {
+//     carbohydrates: 10,
+//     completed: false,
+//     computedTime: "12:30",
+//     fats: 15,
+//     name: "Chicken Salad",
+//     proteins: 25,
+//     time: "12:30",
+//     time_name: "lunch",
+//     x: 118.3888003170824,
+//     y: 39.634087624686714,
+//   },
+//   {
+//     carbohydrates: 5,
+//     completed: false,
+//     computedTime: "16:15",
+//     fats: 2,
+//     name: "Protein Shake",
+//     proteins: 20,
+//     time_name: "pre-workout",
+//     x: 234.07757270260868,
+//     y: 68.7497861828591,
+//   },
+//   {
+//     completed: false,
+//     computedTime: "16:30",
+//     name: "Workout",
+//     time_name: "workout",
+//     x: 211.8111831820431,
+//     y: 103.11774900609144,
+//   },
+//   {
+//     carbohydrates: 35,
+//     completed: false,
+//     computedTime: "17:30",
+//     fats: 4,
+//     name: "Recovery Smoothie",
+//     proteins: 25,
+//     time_name: "post-workout",
+//     x: 260.1192008768393,
+//     y: 103.00000000000003,
+//   },
+//   {
+//     carbohydrates: 0,
+//     completed: true,
+//     computedTime: "19:30",
+//     fats: 20,
+//     name: "Grilled Salmon",
+//     proteins: 30,
+//     time: "19:30",
+//     time_name: "dinner",
+//     x: 277,
+//     y: 171,
+//   },
+// ];

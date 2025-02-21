@@ -272,4 +272,79 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
 ]
+import type { MentalWellnessExerciseItem, MusicItem, VideoItem, YogaPose } from "@/constants/types"
+
+export const breathingExercises: MentalWellnessExerciseItem[] = [
+  {
+    title: "Guided Breathing Exercise",
+    description: "Techniques, Benefits, and a Beginner's How-To",
+    duration: "5:00",
+    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Breathing-49QjxEMwHq0IRu3tvGKMO9kM6nhHQV.png",
+  },
+]
+
+export const bodyScanExercises: MentalWellnessExerciseItem[] = [
+  {
+    title: "Guided Body Scanning Exercise",
+    description: "Techniques, Benefits, and a Beginner's How-To",
+    duration: "5:00",
+    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/BodyScan-fMLjM6lbnn6QUVkxz2C3xBGwVhYrEo.png",
+  },
+]
+
+export const yogaPoses: YogaPose[] = [
+  {
+    name: "Adho Mukha Svanasana",
+    description: "Downward-Facing Dog Pose",
+    duration: "5:00",
+  },
+  {
+    name: "Utrasana Pose",
+    description: "Camel Pose",
+    duration: "5:00",
+  },
+]
+
+export const musicItems: MusicItem[] = [
+  {
+    title: "Relaxing Music",
+    description: "Techniques, Benefits, and a Beginner's How-To",
+    image: "https://example.com/relaxing-music.jpg",
+  },
+  {
+    title: "Nature",
+    description: "Techniques, Benefits, and a Beginner's How-To",
+    image: "https://example.com/nature-sounds.jpg",
+  },
+  {
+    title: "Exercise Music",
+    description: "Techniques, Benefits, and a Beginner's How-To",
+    image: "https://example.com/exercise-music.jpg",
+  },
+]
+
+export const sleepContent = [
+  {
+    title: "Bed-Time Stories",
+    description: "Techniques, Benefits, and a Beginner's How-To",
+    image: "https://example.com/bedtime-stories.jpg",
+  },
+  {
+    title: "Music For Sleep",
+    description: "Techniques, Benefits, and a Beginner's How-To",
+    image: "https://example.com/sleep-music.jpg",
+  },
+]
+
+export const relaxingVideos: VideoItem[] = [
+  {
+    title: "Forest Videos",
+    thumbnail: "https://example.com/forest-thumbnail.jpg",
+  },
+  {
+    title: "Lake Videos",
+    thumbnail: "https://example.com/lake-thumbnail.jpg",
+  },
+]
+
 

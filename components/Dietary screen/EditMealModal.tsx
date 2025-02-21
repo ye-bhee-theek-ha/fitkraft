@@ -3,24 +3,36 @@
 import type React from "react"
 import { useState, useCallback, useMemo, useEffect } from "react"
 import { View, Text, TextInput, TouchableOpacity, Modal, FlatList, Pressable, BackHandler } from "react-native"
-import { Feather, MaterialIcons, MaterialCommunityIcons, FontAwesome6, FontAwesome5 } from "@expo/vector-icons"
+import { Feather, MaterialIcons, MaterialCommunityIcons, FontAwesome6 } from "@expo/vector-icons"
 import type { DietaryItem, MealTimeName } from "@/constants/types"
 import { RecommendedMeals } from "@/constants/sampledata"
-import Animated, { useAnimatedStyle, useSharedValue, withTiming, Easing } from "react-native-reanimated"
+import { useAnimatedStyle, useSharedValue, withTiming, Easing } from "react-native-reanimated"
 import { LinearGradient } from "expo-linear-gradient"
 import { GestureDetector, Gesture } from "react-native-gesture-handler"
+import Animated from "react-native-reanimated" // Import Animated
 
 interface EditMealModalProps {
   isVisible: boolean
   onClose: () => void
   onSave: (meal: DietaryItem) => void
-  meal: DietaryItem
+  meal: DietaryItem | null
+  isAdding: boolean
 }
 
 const mealCategories: MealTimeName[] = ["breakfast", "lunch", "dinner", "snack", "pre-workout", "post-workout"]
 
-const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSave, meal }) => {
-  const [editedMeal, setEditedMeal] = useState<DietaryItem>(meal)
+const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSave, meal, isAdding }) => {
+  const [editedMeal, setEditedMeal] = useState<DietaryItem>(
+    meal || {
+      name: "",
+      time_name: "breakfast",
+      time: "",
+      fats: 0,
+      proteins: 0,
+      carbohydrates: 0,
+      completed: false,
+    },
+  )
   const [showCategoryPicker, setShowCategoryPicker] = useState(false)
   const [recommendations, setRecommendations] = useState(RecommendedMeals)
   const fadeValue = useSharedValue(0)
@@ -72,52 +84,49 @@ const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSav
 
   const renderRecommendedMeal = useCallback(
     ({ item }: { item: DietaryItem }) => (
-    <TouchableOpacity
-      key={item.name}
-      className="bg-primary_dark/50  rounded-xl mb-4 border-2 border-white/25"
-      onPress={() => setEditedMeal(item)}
-    >
-      <LinearGradient
-        colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.01)', 'rgba(255,255,255,0.1)']}
-        locations={[0, 0.5, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={{ flex: 1, borderRadius: 10 }}
-        className="absolute bottom-0 left-0 h-full w-full"
-      />
-      <View className="m-4">
-        <View className="flex-row justify-between items-center mb-4 ">
-            <Text className="text-white text-lg font-semibold max-w-[70%]">{item.name}</Text>
-            {/* <Text className="text-gray-400">{item.time}</Text> */}
+      <TouchableOpacity
+        key={item.name}
+        className="bg-primary_dark/50  rounded-xl mb-4 border-2 border-white/25"
+        onPress={() => setEditedMeal(item)}
+      >
+        <LinearGradient
+          colors={["rgba(255,255,255,0)", "rgba(255,255,255,0.01)", "rgba(255,255,255,0.1)"]}
+          locations={[0, 0.5, 1]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{ flex: 1, borderRadius: 10 }}
+          className="absolute bottom-0 left-0 h-full w-full"
+        />
+        <View className="m-4">
+          <View className="flex-row justify-between items-center mb-4 ">
+            <Text className="text-white text-lg font-semibold">{item.name}</Text>
+            <Text className="text-gray-400">{item.time}</Text>
+          </View>
+          <View className="flex-row justify-end space-x-2 mr-4">
+            <Pressable
+              onLongPress={() => showTooltip("Fats")}
+              className="bg-white/10 border border-white/30 px-2 py-1 rounded-md flex flex-row items-center"
+            >
+              <MaterialIcons name="water-drop" size={12} color="#6dd5fa" />
+              <Text className="text-white text-medium ml-1">{item.fats}</Text>
+            </Pressable>
+            <Pressable
+              onLongPress={() => showTooltip("Proteins")}
+              className="bg-white/10 border border-white/30 px-2 py-1 rounded-md flex flex-row items-center"
+            >
+              <MaterialCommunityIcons name="chemical-weapon" size={12} color="#7bffba" />
+              <Text className="text-white text-medium ml-1">{item.proteins}</Text>
+            </Pressable>
+            <Pressable
+              onLongPress={() => showTooltip("Carbohydrates")}
+              className="bg-white/10 border border-white/30 px-2 py-1 rounded-md flex flex-row items-center"
+            >
+              <FontAwesome6 name="jar-wheat" size={12} color="#fff3d4" />
+              <Text className="text-white text-medium ml-1">{item.carbohydrates}</Text>
+            </Pressable>
+          </View>
         </View>
-        <View className="flex-row justify-end space-x-2 mr-4">
-            <View className="flex flex-1">
-                <Text className="text-gray-400 text-medium">{item.time_name}</Text>  
-            </View>
-            <Pressable
-            onLongPress={() => showTooltip("Fats")}
-            className="bg-white/10 border border-white/30 px-2 py-1 rounded-md flex flex-row items-center"
-            >
-            <MaterialIcons name="water-drop" size={12} color="#6dd5fa" />
-            <Text className="text-white text-medium ml-1">{item.fats}</Text>
-            </Pressable>
-            <Pressable
-            onLongPress={() => showTooltip("Proteins")}
-            className="bg-white/10 border border-white/30 px-2 py-1 rounded-md flex flex-row items-center"
-            >
-            <MaterialCommunityIcons name="chemical-weapon" size={12} color="#7bffba" />
-            <Text className="text-white text-medium ml-1">{item.proteins}</Text>
-            </Pressable>
-            <Pressable
-            onLongPress={() => showTooltip("Carbohydrates")}
-            className="bg-white/10 border border-white/30 px-2 py-1 rounded-md flex flex-row items-center"
-            >
-            <FontAwesome6 name="jar-wheat" size={12} color="#fff3d4" />
-            <Text className="text-white text-medium ml-1">{item.carbohydrates}</Text>
-            </Pressable>
-        </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
     ),
     [showTooltip],
   )
@@ -137,12 +146,7 @@ const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSav
   const renderListHeader = () => (
     <>
       <View className="flex-row justify-between items-center mb-6">
-        <View className="flex flex-row items-center">
-            <Text className="text-white text-2xl font-bold">Edit Meal</Text>
-            <TouchableOpacity onPress={recommendRandom} className="p-4 items-center">
-                <FontAwesome5 name="random" size={24} color="white" style={{opacity:0.8}} />
-            </TouchableOpacity>
-        </View>
+        <Text className="text-white text-2xl font-bold">{isAdding ? "Add Meal" : "Edit Meal"}</Text>
         <TouchableOpacity onPress={onClose}>
           <Feather name="x" size={24} color="white" />
         </TouchableOpacity>
@@ -161,7 +165,7 @@ const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSav
         <View>
           <Text className="text-white mb-2">Meal Category</Text>
           <TouchableOpacity
-            className="bg-white/10 p-3 py-4 rounded-xl flex-row justify-between items-center"
+            className="bg-white/10 p-3 rounded-xl flex-row justify-between items-center"
             onPress={() => setShowCategoryPicker(true)}
           >
             <Text className="text-white capitalize">
@@ -235,9 +239,12 @@ const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSav
   )
 
   const renderListFooter = () => (
-    <View className="flex-row justify-center w-full items-center mt-4">
+    <View className="flex-row justify-between items-center mt-4">
+      <TouchableOpacity onPress={recommendRandom} className="bg-accent/20 py-3 px-4 rounded-full items-center">
+        <Text className="text-white font-semibold">Recommend Random</Text>
+      </TouchableOpacity>
       <TouchableOpacity onPress={handleSave} className="bg-accent py-3 px-6 rounded-full items-center">
-        <Text className="text-primary font-bold text-lg">Save Changes</Text>
+        <Text className="text-primary font-bold text-lg">{isAdding ? "Add Meal" : "Save Changes"}</Text>
       </TouchableOpacity>
     </View>
   )
@@ -262,23 +269,23 @@ const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSav
 
   return (
     <Modal visible={isVisible} animationType="slide" transparent>
-    <GestureDetector gesture={swipeDownGesture}>
-      <View className="flex-1 justify-end bg-black/50">
-        <View className="bg-primary_dark rounded-t-3xl p-6 h-5/6">
-          <FlatList
-            data={filteredRecommendations}
-            renderItem={renderRecommendedMeal}
-            keyExtractor={(item) => item.name}
-            ListHeaderComponent={renderListHeader}
-            ListFooterComponent={renderListFooter}
-            ListEmptyComponent={
-              <Text className="text-white text-center">No recommendations available for this category.</Text>
-            }
-            showsVerticalScrollIndicator={false}
-          />
+      <GestureDetector gesture={swipeDownGesture}>
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="bg-primary_dark rounded-t-3xl p-6 h-5/6">
+            <FlatList
+              data={filteredRecommendations}
+              renderItem={renderRecommendedMeal}
+              keyExtractor={(item) => item.name}
+              ListHeaderComponent={renderListHeader}
+              ListFooterComponent={renderListFooter}
+              ListEmptyComponent={
+                <Text className="text-white text-center">No recommendations available for this category.</Text>
+              }
+              showsVerticalScrollIndicator={false}
+            />
+          </View>
         </View>
-      </View>
-    </GestureDetector>
+      </GestureDetector>
       <Modal visible={showCategoryPicker} transparent animationType="fade">
         <View className="flex-1 justify-center items-center bg-black/50">
           <View className="bg-primary_dark rounded-xl w-4/5 max-h-96">

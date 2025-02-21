@@ -15,6 +15,7 @@ const MemoizedHeader = memo(function MemoizedHeader() {
 
 
   const handleSectionChange = useCallback((section: Section) => {
+    console.log(currentSection, section)
     if (currentSection === section) {
       setCurrentSection("Home");
       router.dismissAll()
@@ -25,7 +26,7 @@ const MemoizedHeader = memo(function MemoizedHeader() {
       router.canGoBack() && router.back()
 
       section === "Dietary" ? router.push("/(home)/dietary") :
-      section === "Mental Wellness" ? router.push("/(home)/mentalWellness"):
+      section === "Mental Wellness" ? router.push("/(home)/(mental-wellness)"):
       router.push("/(home)/workout")
     }
   }, [])

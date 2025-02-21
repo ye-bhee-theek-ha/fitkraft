@@ -50,6 +50,39 @@ export interface DietaryItem {
   completed: boolean
 }
 
+// menatl wellness types
+
+export interface MentalWellnessExerciseItem {
+  title: string
+  description: string
+  duration?: string
+  image?: string
+  videoUrl?: string
+}
+
+export interface MusicItem {
+  title: string
+  description: string
+  image?: string
+  audioUrl?: string
+}
+
+export interface VideoItem {
+  title: string
+  description?: string
+  thumbnail: string
+  videoUrl?: string
+}
+
+export interface YogaPose {
+  name: string
+  description?: string
+  duration?: string
+  thumbnail?: string
+  videoUrl?: string
+}
+
+
 // Component Props Types
 
 // header

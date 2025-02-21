@@ -29,7 +29,8 @@ export default function DietaryScreen() {
           onMarkDone={handleMarkDone}
            onAddCustom={handleAddCustom}
         />
-        <MealPlanGenerator onGenerate={handleGenerateMealPlan} videoCount={13} />
+        <View className="h-4" />
+        <MealPlanGenerator onGenerate={handleGenerateMealPlan} />
       </View>
     </ScrollView>
   )
