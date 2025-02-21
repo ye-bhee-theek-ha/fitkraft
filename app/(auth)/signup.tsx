@@ -199,3 +199,6 @@ export default function SignUpScreen() {
     </ScrollView>
   );
 }
+
+
+// smaple
