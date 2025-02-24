@@ -9,41 +9,46 @@ import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { Section } from "@/constants/types"
 
 const MemoizedHeader = memo(function MemoizedHeader() {
-
   const [currentSection, setCurrentSection] = useState<Section>("Home")
   const pathname = usePathname()
 
+  // Map pathnames to section names
+  const sectionMap: { [key: string]: Section } = {
+    "/home": "Home",
+    "/workout": "Workout",
+    "/dietary": "Dietary",
+    "/mental-wellness": "Mental Wellness",
+  }
 
-  const handleSectionChange = useCallback((section: Section) => {
-    console.log(currentSection, section)
-    if (currentSection === section) {
-      setCurrentSection("Home");
-      router.dismissAll()
-    }
-    else {
-      setCurrentSection(section);
-
-      router.canGoBack() && router.back()
-
-      section === "Dietary" ? router.push("/(home)/dietary") :
-      section === "Mental Wellness" ? router.push("/(home)/(mental-wellness)"):
-      router.push("/(home)/workout")
-    }
-  }, [])
-
+  // Update the current section based on the pathname
   useEffect(() => {
-    // Update the current section based on the pathname
-    if (pathname === "/home") {
-      setCurrentSection("Home")
-    } else if (pathname === "/workout") {
-      setCurrentSection("Workout")
-    } else if (pathname === "/dietary") {
-      setCurrentSection("Dietary")
-    } else if (pathname === "/mental-wellness") {
-      setCurrentSection("Mental Wellness")
+    if (sectionMap[pathname]) {
+      setCurrentSection(sectionMap[pathname])
     }
-  }, [pathname])
+  }, [pathname, sectionMap])
 
+  // Use a functional update to avoid stale state issues
+  const handleSectionChange = useCallback((section: Section) => {
+    setCurrentSection((prevSection) => {
+    console.log(section, prevSection)
+      if (prevSection === section) {
+        router.dismissAll()
+        return "Home"
+      } else {
+        if (router.canGoBack()) {
+          router.back()
+        }
+        if (section === "Dietary") {
+          router.push("/(home)/dietary")
+        } else if (section === "Mental Wellness") {
+          router.push("/(home)/(mental-wellness)")
+        } else {
+          router.push("/(home)/workout")
+        }
+        return section
+      }
+    })
+  }, [])
 
   const handleSearchPress = useCallback(() => {
     console.log("Search pressed")
@@ -69,9 +74,11 @@ const MemoizedHeader = memo(function MemoizedHeader() {
   )
 })
 
+MemoizedHeader.displayName = "MemoizedHeader"
+
 export default function HomeLayout() {
   return (
-    <GestureHandlerRootView>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView className="flex-1 bg-primary">
         <MemoizedHeader />
         <Stack
@@ -100,7 +107,7 @@ export default function HomeLayout() {
             }}
           />
           <Stack.Screen
-            name="mentalWellness"
+            name="(mental-wellness)"
             options={{
               animation: "slide_from_right",
               animationDuration: 200,
@@ -109,7 +116,5 @@ export default function HomeLayout() {
         </Stack>
       </SafeAreaView>
     </GestureHandlerRootView>
-
   )
 }
-

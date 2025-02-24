@@ -63,7 +63,7 @@ export interface MentalWellnessExerciseItem {
 export interface MusicItem {
   title: string
   description: string
-  image?: string
+  image: any
   audioUrl?: string
 }
 

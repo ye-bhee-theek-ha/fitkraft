@@ -272,6 +272,7 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
 ]
+
 import type { MentalWellnessExerciseItem, MusicItem, VideoItem, YogaPose } from "@/constants/types"
 
 export const breathingExercises: MentalWellnessExerciseItem[] = [
@@ -305,23 +306,7 @@ export const yogaPoses: YogaPose[] = [
   },
 ]
 
-export const musicItems: MusicItem[] = [
-  {
-    title: "Relaxing Music",
-    description: "Techniques, Benefits, and a Beginner's How-To",
-    image: "https://example.com/relaxing-music.jpg",
-  },
-  {
-    title: "Nature",
-    description: "Techniques, Benefits, and a Beginner's How-To",
-    image: "https://example.com/nature-sounds.jpg",
-  },
-  {
-    title: "Exercise Music",
-    description: "Techniques, Benefits, and a Beginner's How-To",
-    image: "https://example.com/exercise-music.jpg",
-  },
-]
+
 
 export const sleepContent = [
   {

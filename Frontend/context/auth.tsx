@@ -1,5 +1,5 @@
 import { useRouter, useSegments } from 'expo-router';
-import axios from 'axios';
+// import axios from 'axios';
 import * as React from 'react';
 import { User } from '@/constants/types';
 

@@ -11,11 +11,9 @@ export default function MentalWellnessLayout() {
         },
       }}
     >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="meditation" />
-      <Stack.Screen name="music" />
-      <Stack.Screen name="sleep" />
-      <Stack.Screen name="RelaxingVideos" />
+      <Stack.Screen name="breathing" />
+      <Stack.Screen name="body-scanning" />
+      <Stack.Screen name="yoga" />
     </Stack>
   )
 }
