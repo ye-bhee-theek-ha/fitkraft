@@ -7,6 +7,8 @@ import Header from "@/components/header"
 import { memo } from "react"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { Section } from "@/constants/types"
+import { MusicPlayerProvider } from "@/context/MusicPlayer"
+import MusicPlayerUI from "@/components/mental-wellness/MusicPlayer"
 
 const MemoizedHeader = memo(function MemoizedHeader() {
   const [currentSection, setCurrentSection] = useState<Section>("Home")
@@ -51,15 +53,16 @@ const MemoizedHeader = memo(function MemoizedHeader() {
   }, [])
 
   const handleSearchPress = useCallback(() => {
-    console.log("Search pressed")
+    router.push("/(search)")
+
   }, [])
 
   const handleNotificationPress = useCallback(() => {
-    console.log("Notifications pressed")
+    router.push("/(notifications)")
   }, [])
 
   const handleProfilePress = useCallback(() => {
-    console.log("Profile pressed")
+    router.push("/(profile)")
   }, [])
 
   return (
@@ -80,40 +83,46 @@ export default function HomeLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView className="flex-1 bg-primary">
-        <MemoizedHeader />
-        <Stack
-          initialRouteName="home"
-          screenOptions={{
-            headerShown: false,
-            animation: "fade",
-            contentStyle: {
-              backgroundColor: "transparent",
-            },
-          }}
-        >
-          <Stack.Screen name="home" />
-          <Stack.Screen
-            name="workout"
-            options={{
-              animation: "slide_from_right",
-              animationDuration: 200,
+        <MusicPlayerProvider>
+          <MemoizedHeader />
+          <MusicPlayerUI />
+          <Stack
+            initialRouteName="home"
+            screenOptions={{
+              headerShown: false,
+              animation: "fade",
+              contentStyle: {
+                backgroundColor: "transparent",
+              },
             }}
-          />
-          <Stack.Screen
-            name="dietary"
-            options={{
-              animation: "slide_from_right",
-              animationDuration: 200,
-            }}
-          />
-          <Stack.Screen
-            name="(mental-wellness)"
-            options={{
-              animation: "slide_from_right",
-              animationDuration: 200,
-            }}
-          />
-        </Stack>
+          >
+            <Stack.Screen 
+              name="home" 
+            />
+            <Stack.Screen
+              name="workout"
+              options={{
+                animation: "slide_from_right",
+                animationDuration: 200,
+              }}
+            />
+            <Stack.Screen
+              name="dietary"
+              options={{
+                animation: "slide_from_right",
+                animationDuration: 200,
+              }}
+            />
+            <Stack.Screen
+              name="(mental-wellness)"
+              options={{
+                animation: "slide_from_right",
+                animationDuration: 200,
+              }}
+            />
+          </Stack>
+          
+        </MusicPlayerProvider>
       </SafeAreaView>
     </GestureHandlerRootView>
   )

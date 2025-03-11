@@ -4,7 +4,7 @@ import { Dimensions, View } from "react-native"
 import WorkoutList from "@/components/home screen/WorkoutListHome"
 import DietaryList from "@/components/home screen/DietaryListHome"
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated"
-import { Gesture, GestureDetector, GestureHandlerRootView, ScrollView } from "react-native-gesture-handler"
+import { Gesture, GestureDetector, ScrollView } from "react-native-gesture-handler"
 import { BarChart } from "react-native-gifted-charts"
 import { DietaryItem } from "@/constants/types"
 

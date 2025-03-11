@@ -1,57 +1,77 @@
-"use client"
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, TouchableOpacity, Animated } from "react-native";
+import { Audio } from "expo-av";
 
-import { View, Text, Image } from "react-native"
-import { breathingExercises } from "@/constants/sampledata"
-import { LinearGradient } from "expo-linear-gradient"
-import { TouchableOpacity } from "react-native-gesture-handler"
-import { useState, useEffect } from "react"
-import { FontAwesome6 } from "@expo/vector-icons"
+const difficultyLevels = [
+  { inhale: 4, hold: 2, exhale: 4, reps: 6 },
+  { inhale: 5, hold: 3, exhale: 5, reps: 7 },
+  { inhale: 6, hold: 4, exhale: 6, reps: 8 },
+  { inhale: 7, hold: 5, exhale: 7, reps: 9 },
+  { inhale: 8, hold: 6, exhale: 8, reps: 10 },
+];
 
-const BreathingScreen = () => {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [timeRemaining, setTimeRemaining] = useState(300) // 5 minutes in seconds
+export default function BreathingExercise({ difficulty = 3 }) {
+  const [phase, setPhase] = useState("Breathe In");
+  const [reps, setReps] = useState(0);
+  const progress = useRef(new Animated.Value(0.1)).current;
+  const { inhale, hold, exhale, reps: totalReps } = difficultyLevels[difficulty - 1];
 
   useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (isPlaying && timeRemaining > 0) {
-      interval = setInterval(() => {
-        setTimeRemaining((prev) => prev - 1)
-      }, 1000)
+    let cycle;
+    if (reps < totalReps) {
+      cycle = setTimeout(() => {}, 0); 
+      animateBreath();
+    } else {
+      setPhase("Session Complete");
     }
-    return () => clearInterval(interval)
-  }, [isPlaying, timeRemaining])
+    return () => clearTimeout(cycle);
+  }, [reps]);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, "0")}`
-  }
-
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying)
-  }
+  const animateBreath = () => {
+    setPhase("Breathe In");
+    Animated.timing(progress, {
+      toValue: 1,
+      duration: inhale * 1000,
+      useNativeDriver: false,
+    }).start(() => {
+      setPhase("Hold");
+      setTimeout(() => {
+        setPhase("Breathe Out");
+        Animated.timing(progress, {
+          toValue: 0.1,
+          duration: exhale * 1000,
+          useNativeDriver: false,
+        }).start(() => {
+          setReps((prev) => prev + 1);
+        });
+      }, hold * 1000);
+    });
+  };
 
   return (
-    <View className="flex-1 p-4">
-      <Text className="text-white text-2xl font-bold mb-4">Breathing Exercise</Text>
-      <View className="bg-primary_dark rounded-3xl overflow-hidden">
-        <LinearGradient colors={["rgba(255,255,255,0.1)", "rgba(255,255,255,0)"]} className="p-6">
-          <View className="items-center">
-            <Text className="text-white text-xl font-semibold mb-4">Guided Breathing Exercise</Text>
-            <Image source={{ uri: breathingExercises[0].image }} className="w-48 h-48 mb-6" resizeMode="contain" />
-            <Text className="text-white text-3xl font-bold mb-6">{formatTime(timeRemaining)}</Text>
-            <TouchableOpacity
-              onPress={togglePlay}
-              className="bg-accent w-16 h-16 rounded-full items-center justify-center"
-            >
-              {isPlaying ? <FontAwesome6 name="pause-circle" size={24} color="#FFC1A1" /> : <FontAwesome6 name="play-circle" size={24} color="#FFC1A1" />}
-            </TouchableOpacity>
-          </View>
-        </LinearGradient>
+    <View className="flex-1 items-center justify-center">
+      <Text className="text-white text-heading font-bold mb-4">{phase}</Text>
+      <Animated.View
+        className="h-24 w-24 bg-accent rounded-full"
+        style={{ transform: [{ scale: progress }] }}
+      />
+      <View className="h-2 w-5/6 bg-gray-300 mt-6">
+        <Animated.View
+          className="h-2 bg-accent"
+          style={{
+            width: progress.interpolate({
+              inputRange: [0.1, 1],
+              outputRange: ["10%", "100%"],
+            }),
+          }}
+        />
       </View>
+      <Text className="text-lg text-white mt-4">
+        Repetitions: {reps}/{totalReps}
+      </Text>
+      {/* <TouchableOpacity className="mt-4 px-6 py-4 rounded-3xl bg-white/30" onPress={() => {}}>
+        <Text className="text-white text-btn_title font-semibold">Start/Pause</Text>
+      </TouchableOpacity> */}
     </View>
-  )
+  );
 }
-
-export default BreathingScreen
-

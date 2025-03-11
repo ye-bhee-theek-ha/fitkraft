@@ -21,11 +21,15 @@
         "backgroundColor": "#2A3445"
       },
       "navigationBar": {
-      "visible": false,
-      "barStyle": "light-content",
-      "backgroundColor": "#212835"
-    },
-      "package": "com.aleeabdullah.fitkraft"
+        "visible": false,
+        "barStyle": "light-content",
+        "backgroundColor": "#212835"
+      },
+      "package": "com.aleeabdullah.fitkraft",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -33,16 +37,30 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
+        }
+      ],
       "expo-router",
       [
         "expo-image-picker",
         {
-           "photosPermission": "The app accesses your photos to set your profile picture."
+          "photosPermission": "The app accesses your photos to set your profile picture."
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "9172ed0a-1923-4d14-92ba-588b295d405e"
+      }
     }
   }
 }

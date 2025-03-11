@@ -1,4 +1,4 @@
-import type { DietaryItem } from "@/constants/types"
+import type { DietaryItem, Exercise, WorkoutData } from "@/constants/types"
 
 export const RecommendedMeals: DietaryItem[] = [
   {
@@ -273,40 +273,6 @@ export const RecommendedMeals: DietaryItem[] = [
   },
 ]
 
-import type { MentalWellnessExerciseItem, MusicItem, VideoItem, YogaPose } from "@/constants/types"
-
-export const breathingExercises: MentalWellnessExerciseItem[] = [
-  {
-    title: "Guided Breathing Exercise",
-    description: "Techniques, Benefits, and a Beginner's How-To",
-    duration: "5:00",
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Breathing-49QjxEMwHq0IRu3tvGKMO9kM6nhHQV.png",
-  },
-]
-
-export const bodyScanExercises: MentalWellnessExerciseItem[] = [
-  {
-    title: "Guided Body Scanning Exercise",
-    description: "Techniques, Benefits, and a Beginner's How-To",
-    duration: "5:00",
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/BodyScan-fMLjM6lbnn6QUVkxz2C3xBGwVhYrEo.png",
-  },
-]
-
-export const yogaPoses: YogaPose[] = [
-  {
-    name: "Adho Mukha Svanasana",
-    description: "Downward-Facing Dog Pose",
-    duration: "5:00",
-  },
-  {
-    name: "Utrasana Pose",
-    description: "Camel Pose",
-    duration: "5:00",
-  },
-]
-
-
 
 export const sleepContent = [
   {
@@ -321,15 +287,70 @@ export const sleepContent = [
   },
 ]
 
-export const relaxingVideos: VideoItem[] = [
-  {
-    title: "Forest Videos",
-    thumbnail: "https://example.com/forest-thumbnail.jpg",
-  },
-  {
-    title: "Lake Videos",
-    thumbnail: "https://example.com/lake-thumbnail.jpg",
-  },
+
+
+export const MENTAL_HEALTH_ACTIVITIES = [
+  { id: 1, label: 'Mindfulness', checked: false },
+  { id: 2, label: 'Gratitude', checked: false },
+  { id: 3, label: 'Self-Care', checked: false },
+  { id: 4, label: 'Cared for Someone', checked: false },
+  { id: 5, label: 'Met Loved Ones', checked: false },
+  { id: 6, label: 'Exercised', checked: false },
+  { id: 7, label: 'Did Something Fun', checked: false },
+];
+
+export const EMOTIONS = [
+  { id: 1, label: 'Happy', emoji: require('@/assets/images/MentalWellness/emotions/happy.png') },
+  { id: 2, label: 'Sad', emoji: require('@/assets/images/MentalWellness/emotions/sad.png') },
+  { id: 3, label: 'Content', emoji: require('@/assets/images/MentalWellness/emotions/content.png') },
+  { id: 4, label: 'Anxious', emoji: require('@/assets/images/MentalWellness/emotions/anxious.png') },
+];
+
+
+
+
+// Sample Workout Data
+export const sampleWeeklyWorkouts: Exercise[][] = [
+  // Monday
+  [
+    {
+      id: "1",
+      name: "High-Intensity Interval Training",
+      type: "hit",
+      duration: { minutes: 30, seconds: 0 },
+      repetitions: 5,
+      caloriesBurned: 350,
+      completed: false
+    },
+    {
+      id: "2", 
+      name: "Core Strength Workout",
+      type: "strength",
+      duration: { minutes: 25, seconds: 0 },
+      repetitions: 3,
+      caloriesBurned: 200,
+      completed: true
+    }
+  ],
+  // Tuesday - More sample workouts for each day
+  ...Array(6).fill([
+    {
+      id: "3",
+      name: "Cardio Run",
+      type: "cardio",
+      duration: { minutes: 45, seconds: 0 },
+      repetitions: 1,
+      caloriesBurned: 400,
+      completed: false
+    },
+    {
+      id: "4",
+      name: "Yoga Flow",
+      type: "yoga",
+      duration: { minutes: 35, seconds: 0 },
+      repetitions: 1,
+      caloriesBurned: 150,
+      completed: false
+    }
+  ])
 ]
-
-

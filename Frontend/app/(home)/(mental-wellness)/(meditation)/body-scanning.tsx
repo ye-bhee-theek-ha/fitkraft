@@ -1,57 +1,48 @@
-"use client"
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, Animated, ScrollView } from "react-native";
 
-import { View, Text, Image } from "react-native"
-import { bodyScanExercises } from "@/constants/sampledata"
-import { LinearGradient } from "expo-linear-gradient"
-import { TouchableOpacity } from "react-native-gesture-handler"
-import { useState, useEffect } from "react"
-import { FontAwesome6 } from "@expo/vector-icons"
-
-const BodyScanningScreen = () => {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [timeRemaining, setTimeRemaining] = useState(300) // 5 minutes in seconds
+export default function BodyScanMeditation() {
+  const [currentPart, setCurrentPart] = useState("Head");
+  const bodyParts = ["Head", "Neck", "Shoulders", "Arms", "Hands", "Chest", "Back", "Hips", "Legs", "Feet"];
+  const progress = new Animated.Value(0);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (isPlaying && timeRemaining > 0) {
-      interval = setInterval(() => {
-        setTimeRemaining((prev) => prev - 1)
-      }, 1000)
-    }
-    return () => clearInterval(interval)
-  }, [isPlaying, timeRemaining])
+    let index = 0;
+    const interval = setInterval(() => {
+      if (index < bodyParts.length) {
+        setCurrentPart(bodyParts[index]);
+        Animated.timing(progress, {
+          toValue: (index + 1) / bodyParts.length,
+          duration: 10,
+          useNativeDriver: false,
+        }).start();
+        index++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 3000);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, "0")}`
-  }
-
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying)
-  }
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <View className="flex-1 p-4">
-      <Text className="text-white text-2xl font-bold mb-4">Body Scanning Exercise</Text>
-      <View className="bg-primary_dark rounded-3xl overflow-hidden">
-        <LinearGradient colors={["rgba(255,255,255,0.1)", "rgba(255,255,255,0)"]} className="p-6">
-          <View className="items-center">
-            <Text className="text-white text-xl font-semibold mb-4">Guided Body Scanning Exercise</Text>
-            <Image source={{ uri: bodyScanExercises[0].image }} className="w-48 h-48 mb-6" resizeMode="contain" />
-            <Text className="text-white text-3xl font-bold mb-6">{formatTime(timeRemaining)}</Text>
-            <TouchableOpacity
-              onPress={togglePlay}
-              className="bg-accent w-16 h-16 rounded-full items-center justify-center"
-            >
-              {isPlaying ? <FontAwesome6 name="pause-circle" size={24} color="#FFC1A1" /> : <FontAwesome6 name="play-circle" size={24} color="#FFC1A1" />}
-              </TouchableOpacity>
-          </View>
-        </LinearGradient>
-      </View>
+    <View className="flex-1 items-center justify-center bg-green-100 p-6">
+      <Text className="text-heading font-bold mb-4 text-white">Body Scan Meditation</Text>
+      <ScrollView className="w-full p-4 bg-white border-2 border-accent rounded-lg shadow-md" style={{ maxHeight: 400 }}>
+        <Text className="text-lg text-gray-700 mb-2">
+          Sitting comfortably, take a deep breath in through the nose, and out through the mouth. As you breathe out, close your eyes and notice how your body feels.
+        </Text>
+        <Text className="text-lg text-gray-700 mb-2">
+          Start at the top of your head and mentally scan down through your body, noticing areas of comfort and discomfort. You're not trying to change anything — just observing.
+        </Text>
+        <View className="h-6"/>
+      </ScrollView>
+      <Text className="text-lg text-accent
+       font-bold text-center mt-4">Current Focus: {currentPart}</Text>
+      
+      <TouchableOpacity className="mt-6 px-6 py-2 bg-white/50 rounded-2xl" onPress={() => setCurrentPart("Head")}>
+        <Text className="text-white text-lg">Restart</Text>
+      </TouchableOpacity>
     </View>
-  )
+  );
 }
-
-export default BodyScanningScreen
-

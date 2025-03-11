@@ -1,10 +1,12 @@
 "use client"
 
 import { View, Text, ScrollView } from "react-native"
-import { yogaPoses } from "@/constants/sampledata"
 import { LinearGradient } from "expo-linear-gradient"
 import { TouchableOpacity } from "react-native-gesture-handler"
 import { FontAwesome6 } from "@expo/vector-icons"
+import { YogaPose } from "@/constants/types"
+
+const yogaPoses: YogaPose[] = [];
 
 const YogaScreen = () => {
   return (

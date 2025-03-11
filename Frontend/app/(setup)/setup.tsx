@@ -195,7 +195,7 @@ const SetupScreen: React.FC = () => {
       animateTransition(currentStep + 1, 'left');
     } else {
       console.log("Onboarding completed");
-      // TODO
+      // TODO if possible add types to onboardingData
       const onboardingData = {
         gender: selectedGender,
         age: selectedAge,

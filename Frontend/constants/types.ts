@@ -1,23 +1,107 @@
 // types.ts
 
-  // Auth Types 
-export interface User {
+// badges
+
+// Define Badge Type
+export type BadgeType = 'streak' | 'challenge';
+export type BadgeCategory = 'Streak' | 'Challenge';
+
+// Badge Interface
+export interface Badge {
+  id: string;
   name: string;
-  role: string;
-  user_code: string;
-  user_id: string;
+  category: BadgeCategory;
+  type: BadgeType;
+  BadgeIconImage: string;
+  criteria: string;
+  unlockCondition: string;
+  points: number;
+  reward: string;
+}
+
+
+
+// user
+
+
+export interface WeightOrHeight {
+  whole: number;
+  fraction: number;
+}
+
+export interface User {
+  fullName: string;
+  nickname?: string;
+  image?: string | null;
+}
+
+
+export interface UserProfile {
+  fullName: string;
+  nickname?: string;
+  email: string;
+  mobile: string;
+  image?: string | null;
+
+  // Onboarding-related fields:
+  gender?: 'male' | 'female' | string;
+  age?: number;
+  weight?: WeightOrHeight;
+  height?: WeightOrHeight;
+  goal?: string;
+  activityLevel?: string;
+}
+
+export interface ProfileFormProps {
+  profile: UserProfile;
+  onProfileChange: (field: string, value: string) => void;
+  onImageSelect: () => void;
 }
 
 // Navigation Types
 export type Section = "Home" | "Workout" | "Dietary" | "Mental Wellness"
 
+
 // Workout Types
+
+
+// export interface Food {
+//   id: string;
+//   name: string;
+//   time_name: string;
+//   fats: number;
+//   proteins: number;
+//   carbohydrates: number;
+//   completed: boolean;
+// }
+
+// export interface Music {
+//   id: string;
+//   title: string;
+//   description: string;
+//   category: string;
+//   audioUrl: string;
+// }
+
+// export interface YogaExercise {
+//   id: string;
+//   name: string;
+//   duration: { minutes: number; seconds: number };
+//   type: string;
+//   caloriesBurned: number;
+//   completed: boolean;
+// }
+
+
+export type WorkoutType = "cardio" | "strength" | "yoga" | "hit" | "recovery"
+
 export interface Exercise {
   name: string
   duration: {
     minutes: number
     seconds: number
   }
+  type?: WorkoutType
   repetitions: number
   completed: boolean
   caloriesBurned: number
@@ -36,6 +120,11 @@ export interface WorkoutDayProgress {
   hasWorkout?: boolean
 }
 
+
+export interface WeeklyWorkoutTasksProps {
+  isLoading?: boolean
+  weeklyWorkouts: Exercise[][]
+}
 
 // Dietary Types
 
@@ -63,7 +152,7 @@ export interface MentalWellnessExerciseItem {
 export interface MusicItem {
   title: string
   description: string
-  image: any
+  image?: any
   audioUrl?: string
 }
 
@@ -125,6 +214,35 @@ export interface DietaryTimeInterfaceProps {
   onAddCustom: () => void
 }
 
+
+// search bar
+
+export interface ExerciseDetail {
+  name: string
+  duration: {
+    minutes: number
+    seconds: number
+  }
+  type?: WorkoutType
+  caloriesBurned: number
+}
+
+export interface DietaryItemDetail {
+  name: string
+  time_name: MealTimeName
+  fats?: number
+  proteins?: number
+  carbohydrates?: number
+}
+
+
+export interface SearchResults {
+  exercises: ExerciseDetail[];
+  foods: DietaryItemDetail[];
+  music: MusicItem[]; 
+  yoga: any[]; 
+}
+
 // app btn
 export interface AppButtonProps {
   title: string
@@ -153,3 +271,76 @@ export interface LoadingSpinnerProps {
   style?: any
 }
 
+
+
+// MUSIC MODAL
+
+export type RepeatMode = "off" | "all" | "one";
+
+export interface Song {
+  id: string;
+  title: string;
+  artist: string;
+  image: string;
+  audioUrl: string;
+  duration: number; // milliseconds
+  playlistName: string;
+}
+
+export interface PlaybackState {
+  isPlaying: boolean;
+  currentPosition: number;
+  duration: number;
+  currentSongIndex: number;
+  shuffle: boolean;
+  repeat: RepeatMode;
+  queue: Song[];
+  volume: number;
+}
+
+export interface MusicPlayerContextType {
+  playbackState: PlaybackState;
+  currentSong: Song | null;
+  controlsVisible: boolean;
+  isExpanded: boolean;
+  isLoading: boolean;
+  errorMessage: string | null;
+  togglePlay: () => void;
+  skipToNext: () => void;
+  skipToPrevious: () => void;
+  seek: (position: number) => void;
+  toggleShuffle: () => void;
+  toggleRepeat: () => void;
+  setVolume: (volume: number) => void;
+  toggleExpanded: () => void;
+  playSong: (song: Song, replaceQueue?: boolean) => void;
+  addToQueue: (song: Song) => void;
+  clearQueue: () => void;
+}
+
+// daily quiz
+export interface Activity {
+  id: number;
+  label: string;
+  checked: boolean;
+}
+
+export interface Emotion {
+  id: number;
+  label: string;
+  emoji: string;
+}
+
+export interface DailyCheckInQuizProps {
+  visible: boolean;
+  onClose: () => void;
+  onComplete?: (score: number) => void;
+}
+
+export interface QuizResult {
+  score: number;
+  activities: string[];
+  emotion: string | null;
+  rating: number;
+  timestamp: string;
+}
