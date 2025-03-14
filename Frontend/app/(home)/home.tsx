@@ -7,6 +7,8 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-na
 import { Gesture, GestureDetector, ScrollView } from "react-native-gesture-handler"
 import { BarChart } from "react-native-gifted-charts"
 import { DietaryItem } from "@/constants/types"
+import MusicPlayerCard from "@/components/home screen/Music"
+import { useMusicPlayer } from "@/context/MusicPlayer"
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window")
 
@@ -66,6 +68,9 @@ export const DietaryData: DietaryItem[] = [
 ]
 
 const Home = () => {
+
+  const { currentSong, toggleExpanded, playbackState, skipToPrevious, togglePlay, skipToNext } = useMusicPlayer();
+  
 
   const translateX = useSharedValue(0)
 
@@ -152,9 +157,19 @@ const Home = () => {
                   <View className="w-full">
                     <DietaryList diets={DietaryData} />
                   </View>
-                  <View className="w-20"></View>
+                  <View className="w-20"/>
                   <View className="w-full">
                     <WorkoutList workouts={workoutData} />
+                  </View>
+                  <View className="w-20"/>
+                  <View className="w-full">
+                  <MusicPlayerCard
+                      currentSong={currentSong}
+                      playbackState={playbackState}
+                      togglePlay={togglePlay}
+                      skipToNext={skipToNext}
+                      skipToPrevious={skipToPrevious}
+                    />
                   </View>
                 </Animated.View>
               </GestureDetector>

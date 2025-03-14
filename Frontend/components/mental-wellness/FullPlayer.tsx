@@ -128,18 +128,17 @@ export const FullPlayer: React.FC<FullPlayerProps> = ({ style, screenHeight }) =
   );
   
   return (
-    <Reanimated.View
+    <Reanimated.ScrollView
       style={[
         {
           height: screenHeight,
           width: "100%",
           backgroundColor: "#121225",
           position: "absolute",
-          bottom: -screenHeight,
+          top: 0,
           paddingTop: insets.top,
           paddingBottom: insets.bottom,
         },
-        style,
       ]}
     >
       <LinearGradient
@@ -300,7 +299,7 @@ export const FullPlayer: React.FC<FullPlayerProps> = ({ style, screenHeight }) =
           <QueueList />
         </View>
       </LinearGradient>
-    </Reanimated.View>
+    </Reanimated.ScrollView>
   );
 };
 

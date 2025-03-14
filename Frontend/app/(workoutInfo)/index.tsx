@@ -51,7 +51,8 @@ const WorkoutDetailsScreen = () => {
   const scrollY = useSharedValue(0);
   const fadeValue = useSharedValue(0);
   const slideValue = useSharedValue(50);
-  
+
+
   const mediaRef = useRef(null);
 
   useEffect(() => {
@@ -121,7 +122,8 @@ const WorkoutDetailsScreen = () => {
   const contentAnimatedStyle = useAnimatedStyle(() => {
     return {
       opacity: fadeValue.value,
-      transform: [{ translateY: slideValue.value }]
+      transform: [{ translateY: slideValue.value }],
+      paddingHorizontal: 16,
     };
   });
 
@@ -205,7 +207,7 @@ const WorkoutDetailsScreen = () => {
         <Animated.View 
           style={[
             contentAnimatedStyle,
-            { zIndex: 10 }
+            { zIndex: 10, paddingTop:5, paddingBottom:40 }
           ]}
         >
           {/* Workout Title */}

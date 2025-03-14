@@ -206,20 +206,22 @@ const MusicScreen = () => {
   const playPlaylist = useCallback(async (playlist: Song[]) => {
     try {
       if (playlist && playlist.length > 0) {
-        // Play first song
-        await playSong(playlist[0]);
+        // Clear the queue first
+        await clearQueue();
         
-        // Add remaining songs to queue one by one
-        for (let i = 1; i < playlist.length; i++) {
-          console.log("adding to queue", playlist[i]);
-          await addToQueue(playlist[i]);
+        // Add all songs to the queue first
+        for (let i = 0; i < playlist.length; i++) {
+          addToQueue(playlist[i]);
         }
+        
+        // Then play the first song
+        await playSong(playlist[0], false);
       }
     } catch (error) {
       console.error("Error playing playlist:", error);
       setError("Failed to start playback");
     }
-  }, [playSong, addToQueue]);
+  }, [playSong, addToQueue, clearQueue]);
 
   // Handle playlist selection safely
   const handlePlaylistSelection = useCallback(async (playlistName: string) => {

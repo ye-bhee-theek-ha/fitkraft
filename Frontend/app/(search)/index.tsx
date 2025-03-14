@@ -209,14 +209,14 @@ const SearchScreen = () => {
     } else if (category === "foods") {
       // Navigate to food details page
       router.push({
-        pathname: "../(workoutInfo)",
+        pathname: "../(DietaryInfo)",
         params: { exerciseId: (item as ExerciseDetail).id },
       });
 
     } else if (category === "music") {
       // Navigate to music page
       router.push({
-        pathname: "../(workoutInfo)",
+        pathname: "../(home)/(mental-wellness)/music",
         params: { exerciseId: (item as ExerciseDetail).id },
       });
 
