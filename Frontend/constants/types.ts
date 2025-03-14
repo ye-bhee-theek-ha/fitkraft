@@ -94,14 +94,15 @@ export type Section = "Home" | "Workout" | "Dietary" | "Mental Wellness"
 // }
 
 
-export type WorkoutType = "cardio" | "strength" | "yoga" | "hit" | "recovery"
+export type WorkoutType = "cardio" | "strength" | "yoga" | "hit" | "recovery" | 'flexibility' | 'balance' | 'other' | 'stretching' | 'meditation' | 'pilates' | 'dance' | 'circuit' | 'bodyweight' | 'powerlifting' | 'crossfit' | 'functional' | 'aerobic' | 'anaerobic' | 'plyometric' | 'endurance' | 'mobility' | 'core' | 'full-body' | 'upper-body' | 'lower-body';
 
+export interface Duration {
+  minutes: number;
+  seconds: number;
+}
 export interface Exercise {
   name: string
-  duration: {
-    minutes: number
-    seconds: number
-  }
+  duration: Duration
   type?: WorkoutType
   repetitions: number
   completed: boolean
@@ -112,6 +113,29 @@ export interface WorkoutData {
   date: string
   userID: string
   Exercises: Exercise[]
+}
+
+
+export interface WorkoutDetails {
+  id: string;
+  name: string;
+  mediaUrl: string;
+  mediaType: 'gif' | 'video';
+  duration: Duration;
+  type: WorkoutType;
+  otherTypeSpecification?: string;
+  caloriesBurned: number;
+  description: {
+    intensity: 1 | 2 | 3 | 4 | 5;
+  };
+  additionalDetails: {
+    rep: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+    preWorkoutEnergy?: 1 | 2 | 3 | 4 | 5;
+    postWorkoutEnergy?: 1 | 2 | 3 | 4 | 5;
+    location: 'Home' | 'Gym' | 'Outdoors' | 'Other';
+    progressNotes?: string;
+    goalsAchieved?: string[];
+  };
 }
 
 export interface WorkoutDayProgress {
@@ -218,6 +242,24 @@ export interface DietaryTimeInterfaceProps {
   onAddCustom: () => void
 }
 
+// Notification Types
+
+export type NotificationCategory = 
+  | "system" 
+  | "badges" 
+  | "progress" 
+  | "achievement" 
+  | "workout" 
+  | "diet" 
+  | "reminder"
+
+export interface Notification {
+  id: string
+  category: NotificationCategory
+  message: string
+  timestamp: Date
+  read: boolean
+}
 
 // search bar
 
@@ -232,8 +274,6 @@ export interface DietaryItemDetail {
   name: string
   time_name: MealTimeName
 }
-
-
 
 
 export interface SearchResults {

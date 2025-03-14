@@ -144,7 +144,7 @@ const SearchScreen = () => {
   // Handle search input
   useEffect(() => {
     const delaySearch = setTimeout(() => {
-      if (searchQuery.length >= 2) {
+      if (searchQuery.length >= 0) {
         handleSearch();
       } else {
         setSearchResults({

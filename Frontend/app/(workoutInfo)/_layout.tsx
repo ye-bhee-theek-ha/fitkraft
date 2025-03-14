@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 export default function SearchLayout() {
   return (
     <Stack
-      initialRouteName='workout'
+      initialRouteName='index'
       screenOptions={{
         headerShown: false,
         animation: 'slide_from_right',
@@ -14,7 +14,7 @@ export default function SearchLayout() {
         },
       }}
     >
-      <Stack.Screen name="workout" />
+      <Stack.Screen name="index" />
     </Stack>
   );
 }
