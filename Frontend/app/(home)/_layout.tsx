@@ -29,6 +29,7 @@ const MemoizedHeader = memo(function MemoizedHeader() {
     }
   }, [pathname, sectionMap])
 
+
   // Use a functional update to avoid stale state issues
   const handleSectionChange = useCallback((section: Section) => {
     setCurrentSection((prevSection) => {
@@ -53,16 +54,16 @@ const MemoizedHeader = memo(function MemoizedHeader() {
   }, [])
 
   const handleSearchPress = useCallback(() => {
-    router.push("/(search)")
+    router.push("../(search)")
 
   }, [])
 
   const handleNotificationPress = useCallback(() => {
-    router.push("/(notifications)")
+    router.push("../(notifications)")
   }, [])
 
   const handleProfilePress = useCallback(() => {
-    router.push("/(profile)")
+    router.push("../(profile)")
   }, [])
 
   return (

@@ -42,6 +42,7 @@ export interface UserProfile {
   email: string;
   mobile: string;
   image?: string | null;
+  BMI?: number;
 
   // Onboarding-related fields:
   gender?: 'male' | 'female' | string;
@@ -150,8 +151,10 @@ export interface MentalWellnessExerciseItem {
 }
 
 export interface MusicItem {
+  id?:string
   title: string
-  description: string
+  description?: string
+  category: string;
   image?: any
   audioUrl?: string
 }
@@ -164,6 +167,7 @@ export interface VideoItem {
 }
 
 export interface YogaPose {
+  id: string;
   name: string
   description?: string
   duration?: string
@@ -218,29 +222,25 @@ export interface DietaryTimeInterfaceProps {
 // search bar
 
 export interface ExerciseDetail {
+  id: string
   name: string
-  duration: {
-    minutes: number
-    seconds: number
-  }
   type?: WorkoutType
-  caloriesBurned: number
 }
 
 export interface DietaryItemDetail {
+  id: string
   name: string
   time_name: MealTimeName
-  fats?: number
-  proteins?: number
-  carbohydrates?: number
 }
+
+
 
 
 export interface SearchResults {
   exercises: ExerciseDetail[];
   foods: DietaryItemDetail[];
   music: MusicItem[]; 
-  yoga: any[]; 
+  yoga: YogaPose[]; 
 }
 
 // app btn

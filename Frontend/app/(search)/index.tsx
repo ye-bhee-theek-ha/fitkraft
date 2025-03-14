@@ -3,124 +3,64 @@ import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator } 
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useNavigation } from "@react-navigation/native";
+import { DietaryItemDetail, ExerciseDetail, MusicItem, SearchResults, WorkoutType, YogaPose } from "@/constants/types";
+import { router } from "expo-router";
 
-// Types definitions
-export type WorkoutType = "cardio" | "strength" | "yoga" | "hit" | "recovery";
-export type MealTimeName = "breakfast" | "lunch" | "dinner" | "snack" | "pre-workout" | "post-workout" | "workout";
-
-export interface ExerciseDetail {
-  name: string;
-  duration: {
-    minutes: number;
-    seconds: number;
-  };
-  type?: WorkoutType;
-  caloriesBurned: number;
-}
-
-export interface DietaryItemDetail {
-  name: string;
-  time_name: MealTimeName;
-  fats?: number;
-  proteins?: number;
-  carbohydrates?: number;
-}
-
-export interface MusicItem {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  audioUrl: string;
-}
-
-export interface YogaExercise {
-  id: string;
-  name: string;
-  duration: {
-    minutes: number;
-    seconds: number;
-  };
-  type: WorkoutType;
-  caloriesBurned: number;
-  completed: boolean;
-}
-
-export interface SearchResults {
-  exercises: ExerciseDetail[];
-  foods: DietaryItemDetail[];
-  music: MusicItem[];
-  yoga: YogaExercise[];
-}
 
 // Types for internal component use
 type SearchResultItem = 
   | { type: 'header'; category: keyof SearchResults; title: string } 
-  | { type: 'item'; category: keyof SearchResults; data: ExerciseDetail | DietaryItemDetail | MusicItem | YogaExercise };
+  | { type: 'item'; category: keyof SearchResults; data: ExerciseDetail | DietaryItemDetail | MusicItem | YogaPose };
 
 // Sample data for search results
 const sampleExercises: ExerciseDetail[] = [
   {
+    id: "w0",
     name: "Push-ups",
     type: "strength",
-    duration: { minutes: 5, seconds: 0 },
-    caloriesBurned: 50,
   },
   {
+    id: "w1",
     name: "Running",
     type: "cardio",
-    duration: { minutes: 30, seconds: 0 },
-    caloriesBurned: 300,
   },
   {
+    id: "w2",
     name: "Squats",
     type: "strength",
-    duration: { minutes: 10, seconds: 0 },
-    caloriesBurned: 100,
   },
   {
+    id: "w3",
     name: "Meditation",
     type: "recovery",
-    duration: { minutes: 15, seconds: 0 },
-    caloriesBurned: 20,
   },
   {
+    id: "w4",
     name: "HIT Circuit",
     type: "hit",
-    duration: { minutes: 20, seconds: 0 },
-    caloriesBurned: 250,
   }
 ];
 
 const sampleFoods: DietaryItemDetail[] = [
   {
+    id: "d1",
     name: "Grilled Chicken Salad",
     time_name: "lunch",
-    fats: 12,
-    proteins: 35,
-    carbohydrates: 15,
   },
   {
+    id: "d2",
     name: "Protein Smoothie",
     time_name: "post-workout",
-    fats: 5,
-    proteins: 25,
-    carbohydrates: 30,
   },
   {
+    id: "d3",
     name: "Avocado Toast",
     time_name: "breakfast",
-    fats: 15,
-    proteins: 8,
-    carbohydrates: 20,
   },
   {
+    id: "d4",
     name: "Oatmeal with Berries",
     time_name: "breakfast",
-    fats: 6,
-    proteins: 10,
-    carbohydrates: 40,
   }
 ];
 
@@ -128,57 +68,37 @@ const sampleMusics: MusicItem[] = [
   {
     id: "m1",
     title: "Ocean Waves",
-    description: "Relaxing sound of ocean waves",
     category: "nature",
-    audioUrl: "https://example.com/ocean-waves.mp3",
   },
   {
     id: "m2",
     title: "Meditation Journey",
-    description: "Guided meditation with ambient sounds",
     category: "relaxing music",
-    audioUrl: "https://example.com/meditation.mp3",
   },
   {
     id: "m3",
     title: "Workout Beats",
-    description: "High energy music for intense workouts",
     category: "exercise music",
-    audioUrl: "https://example.com/workout-beats.mp3",
   },
   {
     id: "m4",
     title: "Forest Sounds",
-    description: "Calming sounds of forest and birds",
     category: "nature",
-    audioUrl: "https://example.com/forest.mp3",
   }
 ];
 
-const sampleYogaExercises: YogaExercise[] = [
+const sampleYogaExercises: YogaPose[] = [
   {
     id: "y1",
     name: "Downward Dog",
-    duration: { minutes: 5, seconds: 0 },
-    type: "yoga",
-    caloriesBurned: 30,
-    completed: false,
   },
   {
     id: "y2",
     name: "Warrior Pose",
-    duration: { minutes: 3, seconds: 0 },
-    type: "yoga",
-    caloriesBurned: 25,
-    completed: false,
   },
   {
     id: "y3",
     name: "Tree Pose",
-    duration: { minutes: 2, seconds: 30 },
-    type: "yoga",
-    caloriesBurned: 20,
-    completed: false,
   }
 ];
 
@@ -192,7 +112,6 @@ const SearchScreen = () => {
     yoga: []
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const navigation = useNavigation<any>();
 
   // Get icon based on item category
   const getIconForCategory = (category: keyof SearchResults, type?: string): JSX.Element => {
@@ -225,7 +144,7 @@ const SearchScreen = () => {
   // Handle search input
   useEffect(() => {
     const delaySearch = setTimeout(() => {
-      if (searchQuery.length >= 4) {
+      if (searchQuery.length >= 2) {
         handleSearch();
       } else {
         setSearchResults({
@@ -240,7 +159,7 @@ const SearchScreen = () => {
     return () => clearTimeout(delaySearch);
   }, [searchQuery]);
 
-  // Simulate search API call
+  // TODO Simulate search API call
   const handleSearch = async (): Promise<void> => {
     setIsLoading(true);
     
@@ -257,8 +176,7 @@ const SearchScreen = () => {
     );
     
     const filteredMusic = sampleMusics.filter(
-      music => music.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-               music.description.toLowerCase().includes(searchQuery.toLowerCase())
+      music => music.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
     
     const filteredYoga = sampleYogaExercises.filter(
@@ -277,21 +195,38 @@ const SearchScreen = () => {
 
   // Handle item click
   const handleItemPress = (
-    item: ExerciseDetail | DietaryItemDetail | MusicItem | YogaExercise, 
+    item: ExerciseDetail | DietaryItemDetail | MusicItem | YogaPose, 
     category: keyof SearchResults
   ): void => {
+
     if (category === "exercises") {
       // Navigate to exercise details page
-      navigation.navigate("ExerciseDetails", { exercise: item });
+      router.push({
+        pathname: "../(workoutInfo)",
+        params: { exerciseId: (item as ExerciseDetail).id },
+      });
+
     } else if (category === "foods") {
       // Navigate to food details page
-      navigation.navigate("FoodDetails", { food: item });
+      router.push({
+        pathname: "../(workoutInfo)",
+        params: { exerciseId: (item as ExerciseDetail).id },
+      });
+
     } else if (category === "music") {
       // Navigate to music page
-      navigation.navigate("MusicPlayer", { music: item });
+      router.push({
+        pathname: "../(workoutInfo)",
+        params: { exerciseId: (item as ExerciseDetail).id },
+      });
+
     } else if (category === "yoga") {
-      // Navigate to yoga page
-      navigation.navigate("YogaPlayer", { yoga: item });
+      
+      router.push({
+        pathname: "../(home)/(mental-wellness)/(meditation)/yoga",
+        params: { exerciseId: (item as ExerciseDetail).id },
+      });
+    
     }
   };
 
@@ -300,7 +235,7 @@ const SearchScreen = () => {
     if (count === 0) return null;
     
     return (
-      <View className="bg-white/10 px-4 py-2 mt-2">
+      <View className="bg-white/10 px-4 py-2 mt-2 rounded-full">
         <Text className="text-white font-semibold text-medium">{title} ({count})</Text>
       </View>
     );
@@ -308,18 +243,18 @@ const SearchScreen = () => {
 
   // Get item name or title with type safety
   const getItemName = (
-    item: ExerciseDetail | DietaryItemDetail | MusicItem | YogaExercise, 
+    item: ExerciseDetail | DietaryItemDetail | MusicItem | YogaPose, 
     category: keyof SearchResults
   ): string => {
     if (category === "music") {
       return (item as MusicItem).title;
     }
-    return (item as ExerciseDetail | DietaryItemDetail | YogaExercise).name;
+    return (item as ExerciseDetail | DietaryItemDetail | YogaPose).name;
   };
 
   // Get item subtext with type safety
   const getItemSubtext = (
-    item: ExerciseDetail | DietaryItemDetail | MusicItem | YogaExercise, 
+    item: ExerciseDetail | DietaryItemDetail | MusicItem | YogaPose, 
     category: keyof SearchResults
   ): string => {
     if (category === "exercises") {
@@ -334,13 +269,6 @@ const SearchScreen = () => {
 
   // Render search results
   const renderSearchResults = (): JSX.Element => {
-    if (searchQuery.length < 4) {
-      return (
-        <View className="items-center justify-center mt-10">
-          <Text className="text-white/70 text-medium">Type at least 4 characters to search</Text>
-        </View>
-      );
-    }
 
     if (isLoading) {
       return (
@@ -357,7 +285,7 @@ const SearchScreen = () => {
       searchResults.music.length > 0 || 
       searchResults.yoga.length > 0;
 
-    if (!hasResults) {
+    if (!hasResults && searchQuery.length > 0) {
       return (
         <View className="items-center justify-center mt-10">
           <MaterialIcons name="search-off" size={48} color="white" />
@@ -394,6 +322,8 @@ const SearchScreen = () => {
       })),
     ];
 
+    console.log(flatListData)
+
     return (
       <FlatList
         data={flatListData}
@@ -408,13 +338,15 @@ const SearchScreen = () => {
           
           const category = item.category;
           const data = item.data;
+          console.log("category : " , category)
+          console.log("data : ", data)
           const itemType = category === 'exercises' || category === 'yoga' 
-            ? (data as ExerciseDetail | YogaExercise).type 
+            ? (data as ExerciseDetail).type 
             : category === 'music' ? (data as MusicItem).category : undefined;
           
           return (
             <TouchableOpacity
-              className="flex-row items-center p-3 mb-1 rounded-lg"
+              className="flex-row items-center p-3 mb-1 rounded-lg "
               onPress={() => handleItemPress(data, category)}
             >
               <View className="flex justify-center items-center w-10 h-10 rounded-full bg-primary_dark mr-3 overflow-hidden">
@@ -445,12 +377,15 @@ const SearchScreen = () => {
     <View className="flex-1 bg-primary_dark">
       {/* Search Header */}
       <LinearGradient
-        colors={["rgba(0,0,0,0.8)", "transparent"]}
-        className="absolute top-0 left-0 right-0 h-20 z-10"
+       colors={["rgba(255,255,255,0.01)", "rgba(255,255,255,0.1)", "rgba(255,255,255,0.3)"]}
+       locations={[0, 0.5, 1]}
+       start={{ x: 0, y: 0 }}
+       end={{ x: 1, y: 2 }}
+       style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
       />
       
       <View className="pt-12 px-4 pb-4 z-20">
-        <View className="flex-row items-center bg-white/10 rounded-full px-4 py-2 border border-white/20">
+        <View className="flex-row items-center bg-white/10 rounded-full px-4 py-2 border shadow-2xl border-white/20">
           <Ionicons name="search" size={20} color="white" />
           <TextInput
             className="flex-1 text-white ml-2 h-10"
@@ -468,13 +403,13 @@ const SearchScreen = () => {
       </View>
       
       {/* Search Results */}
-      <View className="flex-1 border-2 border-white/20 rounded-t-3xl overflow-hidden mx-4">
-        <LinearGradient
+      <View className="flex-1 border-2 bg-primary_dark/80 border-white/20 rounded-t-3xl overflow-hidden mx-4">
+        {/* <LinearGradient
           colors={["rgba(255,255,255,0)", "rgba(255,255,255,0.01)", "rgba(255,255,255,0.1)"]}
           locations={[0, 0.5, 1]}
           style={{ flex: 1, borderRadius: 15 }}
           className="absolute bottom-0 left-0 h-full w-full"
-        />
+        /> */}
         
         <View className="flex-1 p-2">
           {renderSearchResults()}
