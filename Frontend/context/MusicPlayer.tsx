@@ -5,6 +5,7 @@ import React, {
   createContext,
   useContext,
   useRef,
+  useMemo,
 } from "react";
 import {
   Audio,
@@ -12,24 +13,35 @@ import {
   InterruptionModeAndroid,
   InterruptionModeIOS,
 } from "expo-av";
-import { MusicPlayerContextType, PlaybackState, Song } from "@/constants/types";
+import { MusicPlayerContextType, PlaybackState, Song, UiState } from "@/constants/types";
 
 // Create Context
 export const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
 
-export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Use a ref to store the current sound instance
-  const soundRef = useRef<Audio.Sound | null>(null);
-  const [currentSong, setCurrentSong] = useState<Song | null>(null);
-  const [controlsVisible, setControlsVisible] = useState<boolean>(false);
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  
-  // Queue for pending operations
-  const operationQueueRef = useRef<Array<() => Promise<any>>>([]);
-  const isOperationInProgressRef = useRef<boolean>(false);
+// Status update throttling interval (ms)
+const STATUS_UPDATE_INTERVAL = 500;
 
+export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Sound reference with typed null safety
+  const soundRef = useRef<Audio.Sound | null>(null);
+  
+  // Last status update timestamp for throttling
+  const lastStatusUpdateRef = useRef<number>(0);
+  
+  // Operation lock to prevent concurrent sound operations
+  const isOperationLockRef = useRef<boolean>(false);
+  
+  // Group UI-related state to reduce renders
+  const [uiState, setUiState] = useState<UiState>({
+    controlsVisible: false,
+    isExpanded: false,
+    isLoading: false,
+    errorMessage: null,
+  });
+  
+  // Current song state
+  const [currentSong, setCurrentSong] = useState<Song | null>(null);
+  
   // Playback state
   const [playbackState, setPlaybackState] = useState<PlaybackState>({
     isPlaying: false,
@@ -37,8 +49,8 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     duration: 0,
     currentSongIndex: 0,
     shuffle: false,
-    repeat: "off",
-    queue: [],
+    repeat: "off" as "off" | "all" | "one",
+    queue: [] as Song[],
     volume: 1.0,
   });
 
@@ -55,146 +67,138 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
         });
       } catch (e) {
         console.error("Failed to setup audio mode:", e);
-        setErrorMessage("Could not initialize audio system");
+        setUiState(prev => ({ ...prev, errorMessage: "Could not initialize audio system" }));
       }
     };
 
     setupAudio();
 
+    // Cleanup function
     return () => {
-      // Ensure cleanup on unmount
-      unloadCurrentSound().catch(e => console.error("Cleanup error:", e));
+      if (soundRef.current) {
+        const sound = soundRef.current;
+        sound.unloadAsync().catch(e => console.error("Cleanup error:", e));
+        soundRef.current = null;
+      }
     };
   }, []);
 
-  // Process the operation queue
-  const processNextOperation = useCallback(async () => {
-    if (isOperationInProgressRef.current || operationQueueRef.current.length === 0) {
+  // Throttled status update function
+  const handlePlaybackStatusUpdate = useCallback((status: AVPlaybackStatus) => {
+    if (!status.isLoaded) return;
+    
+    const now = Date.now();
+    // Throttle position updates during normal playback
+    if (status.isPlaying && !status.didJustFinish && now - lastStatusUpdateRef.current < STATUS_UPDATE_INTERVAL) {
       return;
     }
     
-    isOperationInProgressRef.current = true;
-    setIsLoading(true);
-    setErrorMessage(null);
+    lastStatusUpdateRef.current = now;
+    
+    // Update position and duration
+    setPlaybackState(prev => ({
+      ...prev,
+      currentPosition: status.positionMillis,
+      duration: status.durationMillis || prev.duration,
+      isPlaying: status.isPlaying,
+    }));
+    
+    // Handle playback end separately to ensure it's always processed
+    if (status.didJustFinish) {
+      handleSongEnd();
+    }
+  }, []);
+
+  // Execute an audio operation with locking
+  const executeOperation = useCallback(async <T,>(operation: () => Promise<T>): Promise<T | null> => {
+    // If another operation is in progress, skip this one
+    if (isOperationLockRef.current) {
+      return null;
+    }
+    
+    isOperationLockRef.current = true;
+    setUiState(prev => ({ ...prev, isLoading: true, errorMessage: null }));
     
     try {
-      const nextOperation = operationQueueRef.current.shift();
-      if (nextOperation) {
-        await nextOperation();
-      }
+      const result = await operation();
+      return result;
     } catch (e) {
       console.error("Operation failed:", e);
-      setErrorMessage("Operation failed. Please try again.");
+      setUiState(prev => ({ ...prev, errorMessage: "Operation failed. Please try again." }));
+      return null;
     } finally {
-      isOperationInProgressRef.current = false;
-      setIsLoading(false);
-      
-      // Process next item in queue if any
-      if (operationQueueRef.current.length > 0) {
-        setTimeout(processNextOperation, 0);
-      }
+      isOperationLockRef.current = false;
+      setUiState(prev => ({ ...prev, isLoading: false }));
     }
   }, []);
 
-  // Queue an operation for execution
-  const queueOperation = useCallback((operation: () => Promise<any>) => {
-    operationQueueRef.current.push(operation);
-    processNextOperation();
-  }, [processNextOperation]);
-
-  // Clean up any existing sound before creating a new one
+  // Clean up existing sound if needed
   const unloadCurrentSound = useCallback(async () => {
-    if (soundRef.current) {
-      let sound = soundRef.current;
-      soundRef.current = null; // Clear ref first to prevent duplicate unloading attempts
-      
-      try {
-        const status = await sound.getStatusAsync();
-        if (status.isLoaded) {
-          await sound.stopAsync();
-          await sound.unloadAsync();
-        }
-      } catch (e) {
-        console.error("Failed to unload sound:", e);
-        // Even if error occurs, proceed with state cleanup
+    if (!soundRef.current) return;
+    
+    const sound = soundRef.current;
+    soundRef.current = null; // Clear ref first to prevent duplicate unloading attempts
+    
+    try {
+      const status = await sound.getStatusAsync();
+      if (status.isLoaded) {
+        await sound.stopAsync();
+        await sound.unloadAsync();
       }
+    } catch (e) {
+      console.error("Failed to unload sound:", e);
+      // Continue even if unloading fails
     }
   }, []);
 
-  // Load a song using the sound ref - properly queued
-  const loadSong = useCallback(async (song: Song) => {
+  // Load a song - optimized to avoid unnecessary unloads
+  const loadSong = useCallback(async (song: Song): Promise<boolean> => {
     try {
-      // Make sure any existing sound is unloaded first
+      // Check if we're already playing this song
+      if (soundRef.current && currentSong?.id === song.id) {
+        return true;
+      }
+      
+      // Unload current song if different
       await unloadCurrentSound();
-
-      // Load new sound
+      
+      // Create new sound instance with throttled status updates
       const { sound: newSound } = await Audio.Sound.createAsync(
         { uri: song.audioUrl },
         { shouldPlay: true },
-        (status) => {
-          if (!status.isLoaded) return;
-          
-          // Update position and duration
-          setPlaybackState(prev => ({
-            ...prev,
-            currentPosition: status.positionMillis,
-            duration: status.durationMillis || 0,
-            isPlaying: status.isPlaying
-          }));
-          
-          // Handle playback end
-          if (status.didJustFinish) {
-            handleSongEnd();
-          }
-        }
+        handlePlaybackStatusUpdate
       );
       
       soundRef.current = newSound;
-      setControlsVisible(true);
       
+      // Update UI state once instead of multiple separate state updates
+      setUiState(prev => ({
+        ...prev, 
+        controlsVisible: true,
+        errorMessage: null
+      }));
+      
+      // Update playback state
       setPlaybackState(prev => ({
         ...prev,
         isPlaying: true,
+        currentPosition: 0,
       }));
       
       return true;
     } catch (e) {
       console.error("Failed to load song:", e);
-      setErrorMessage(`Failed to load: ${song.title}`);
+      setUiState(prev => ({ 
+        ...prev, 
+        errorMessage: `Failed to load: ${song.title}` 
+      }));
       return false;
     }
-  }, [unloadCurrentSound]);
+  }, [currentSong?.id, handlePlaybackStatusUpdate, unloadCurrentSound]);
 
-  // Skip to next song - queued operation
-  const skipToNext = useCallback(() => {
-    queueOperation(async () => {
-      const { queue, currentSongIndex, shuffle } = playbackState;
-      if (queue.length <= 1) return false;
-
-      let nextIndex: number;
-      if (shuffle) {
-        do {
-          nextIndex = Math.floor(Math.random() * queue.length);
-        } while (nextIndex === currentSongIndex && queue.length > 1);
-      } else {
-        nextIndex = (currentSongIndex + 1) % queue.length;
-      }
-
-      setPlaybackState((prev) => ({
-        ...prev,
-        currentSongIndex: nextIndex,
-        currentPosition: 0,
-      }));
-
-      setCurrentSong(queue[nextIndex]);
-      await loadSong(queue[nextIndex]);
-      return true;
-    });
-  }, [playbackState, loadSong, queueOperation]);
-
-  // Handle song end
+  // Handle song end - separated for clarity
   const handleSongEnd = useCallback(() => {
-    queueOperation(async () => {
+    executeOperation(async () => {
       const { repeat, currentSongIndex, queue } = playbackState;
       
       if (repeat === "one" && soundRef.current) {
@@ -202,81 +206,127 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
         if (status.isLoaded) {
           await soundRef.current.setPositionAsync(0);
           await soundRef.current.playAsync();
+          
+          // Only update position, not the entire state
+          setPlaybackState(prev => ({
+            ...prev,
+            currentPosition: 0,
+          }));
         }
       } else if (currentSongIndex < queue.length - 1 || repeat === "all") {
         const nextIndex = (currentSongIndex + 1) % queue.length;
-        setPlaybackState((prev) => ({
+        const nextSong = queue[nextIndex];
+        
+        // Update state first to avoid jank
+        setPlaybackState(prev => ({
           ...prev, 
           currentSongIndex: nextIndex,
           currentPosition: 0
         }));
-        setCurrentSong(queue[nextIndex]);
-        await loadSong(queue[nextIndex]);
+        
+        setCurrentSong(nextSong);
+        await loadSong(nextSong);
       } else {
         // End of queue reached
-        setPlaybackState((prev) => ({ ...prev, isPlaying: false, currentPosition: 0 }));
+        setPlaybackState(prev => ({ 
+          ...prev, 
+          isPlaying: false, 
+          currentPosition: 0 
+        }));
       }
       return true;
-    });
-  }, [playbackState, loadSong, queueOperation]);
+    }).catch(e => console.error("Error handling song end:", e));
+  }, [executeOperation, loadSong, playbackState]);
 
-  // Toggle play/pause - queued operation
-  const togglePlay = useCallback(async () => {
-    queueOperation(async () => {
+  // Skip to next song
+  const skipToNext = useCallback(() => {
+    executeOperation(async () => {
+      const { queue, currentSongIndex, shuffle } = playbackState;
+      if (queue.length <= 1) return false;
+
+      let nextIndex: number;
+      if (shuffle) {
+        // Ensure we don't pick the same song if there are options
+        do {
+          nextIndex = Math.floor(Math.random() * queue.length);
+        } while (nextIndex === currentSongIndex && queue.length > 1);
+      } else {
+        nextIndex = (currentSongIndex + 1) % queue.length;
+      }
+
+      const nextSong = queue[nextIndex];
+      
+      // Update state before loading to improve perceived performance
+      setPlaybackState(prev => ({
+        ...prev,
+        currentSongIndex: nextIndex,
+        currentPosition: 0,
+      }));
+      
+      setCurrentSong(nextSong);
+      await loadSong(nextSong);
+      return true;
+    }).catch(e => console.error("Error skipping to next:", e));
+  }, [executeOperation, loadSong, playbackState]);
+
+  // Toggle play/pause - simplified
+  const togglePlay = useCallback(() => {
+    executeOperation(async () => {
       if (!soundRef.current || !currentSong) return false;
 
       try {
         const status = await soundRef.current.getStatusAsync();
+        
         if (!status.isLoaded) {
           // Reload sound if needed
           await loadSong(currentSong);
           return true;
         }
         
-        if (playbackState.isPlaying) {
+        if (status.isPlaying) {
           await soundRef.current.pauseAsync();
         } else {
           await soundRef.current.playAsync();
         }
         
-        setPlaybackState((prev) => ({
+        // Update only the isPlaying flag
+        setPlaybackState(prev => ({
           ...prev,
           isPlaying: !prev.isPlaying,
         }));
         return true;
       } catch (e) {
         console.error("Failed to toggle play:", e);
-        setErrorMessage("Failed to play/pause");
+        setUiState(prev => ({ ...prev, errorMessage: "Failed to play/pause" }));
         return false;
       }
-    });
-  }, [currentSong, playbackState.isPlaying, queueOperation, loadSong]);
+    }).catch(e => console.error("Error toggling play:", e));
+  }, [currentSong, executeOperation, loadSong]);
 
-  // Play a song - queued operation
-  const playSong = useCallback(async (song: Song, replaceQueue = true) => {
-    queueOperation(async () => {
+  // Play a song - optimized flow
+  const playSong = useCallback((song: Song, replaceQueue = true) => {
+    executeOperation(async () => {
       // Check if this is the currently playing song
-      if (currentSong && currentSong.id === song.id) {
+      if (currentSong?.id === song.id) {
         if (!playbackState.isPlaying) {
           await togglePlay();
         } else {
-          // If it's already playing, just expand the player
-          setIsExpanded(true);
+          // Already playing, just expand the player
+          setUiState(prev => ({ ...prev, isExpanded: true }));
         }
         return true;
       }
       
+      // Update queue first for better UX
       if (replaceQueue) {
-        setPlaybackState((prev) => ({
+        setPlaybackState(prev => ({
           ...prev,
           queue: [song],
           currentSongIndex: 0,
-          isPlaying: true,
           currentPosition: 0,
         }));
       } else {
-        // Use functional update to ensure we have the latest state
-        setPlaybackState((prev) => {
+        setPlaybackState(prev => {
           const newQueue = [...prev.queue];
           newQueue.splice(prev.currentSongIndex + 1, 0, song);
           return {
@@ -286,16 +336,17 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
         });
       }
       
+      // Update current song before loading
       setCurrentSong(song);
       await loadSong(song);
       return true;
-    });
-  }, [loadSong, togglePlay, currentSong, queueOperation, playbackState.isPlaying]);
+    }).catch(e => console.error("Error playing song:", e));
+  }, [currentSong?.id, executeOperation, loadSong, playbackState.isPlaying, togglePlay]);
 
-  // Add to queue - optimized array handling
+  // Add to queue - optimized
   const addToQueue = useCallback((song: Song) => {
-    setPlaybackState((prev) => {
-      // If queue is empty, update current song index too
+    // No need for executeOperation here as this is a simple state update
+    setPlaybackState(prev => {
       const isFirstSong = prev.queue.length === 0;
       return {
         ...prev,
@@ -304,18 +355,18 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       };
     });
 
+    // Play the song if nothing is currently playing
     if (!currentSong) {
       playSong(song, false);
     }
   }, [currentSong, playSong]);
 
-  // Clear queue - queued operation
-  const clearQueue = useCallback(async () => {
-    queueOperation(async () => {
-      // Ensure we properly unload any existing sound
+  // Clear queue - simplified
+  const clearQueue = useCallback(() => {
+    executeOperation(async () => {
       await unloadCurrentSound();
       
-      // Reset all state
+      // Reset all state in one update
       setPlaybackState({
         isPlaying: false,
         currentPosition: 0,
@@ -328,24 +379,32 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       });
       
       setCurrentSong(null);
-      setControlsVisible(false);
-      setIsExpanded(false);
+      
+      setUiState(prev => ({
+        ...prev,
+        controlsVisible: false,
+        isExpanded: false,
+        errorMessage: null,
+      }));
       
       return true;
-    });
-  }, [unloadCurrentSound, queueOperation]);
+    }).catch(e => console.error("Error clearing queue:", e));
+  }, [executeOperation, unloadCurrentSound]);
 
-  // Skip to previous song - queued operation
+  // Skip to previous
   const skipToPrevious = useCallback(() => {
-    queueOperation(async () => {
+    executeOperation(async () => {
       const { queue, currentSongIndex, currentPosition } = playbackState;
       if (queue.length <= 1) return false;
 
+      // If song has played for over 3 seconds, restart it instead of going to previous
       if (currentPosition > 3000 && soundRef.current) {
         const status = await soundRef.current.getStatusAsync();
         if (status.isLoaded) {
           await soundRef.current.setPositionAsync(0);
-          setPlaybackState((prev) => ({
+          
+          // Update only the position
+          setPlaybackState(prev => ({
             ...prev,
             currentPosition: 0,
           }));
@@ -354,46 +413,51 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       }
 
       const prevIndex = (currentSongIndex - 1 + queue.length) % queue.length;
-      setPlaybackState((prev) => ({
+      const prevSong = queue[prevIndex];
+      
+      // Update state before loading
+      setPlaybackState(prev => ({
         ...prev,
         currentSongIndex: prevIndex,
         currentPosition: 0,
       }));
       
-      setCurrentSong(queue[prevIndex]);
-      await loadSong(queue[prevIndex]);
+      setCurrentSong(prevSong);
+      await loadSong(prevSong);
       return true;
-    });
-  }, [playbackState, loadSong, queueOperation]);
+    }).catch(e => console.error("Error skipping to previous:", e));
+  }, [executeOperation, loadSong, playbackState]);
 
-  // Seek to position - queued operation
-  const seek = useCallback(async (position: number) => {
-    queueOperation(async () => {
+  // Seek to position - simplified
+  const seek = useCallback((position: number) => {
+    executeOperation(async () => {
       if (!soundRef.current) return false;
       
       const status = await soundRef.current.getStatusAsync();
       if (!status.isLoaded) return false;
       
       await soundRef.current.setPositionAsync(position);
-      setPlaybackState((prev) => ({
+      
+      // Update only position for better performance
+      setPlaybackState(prev => ({
         ...prev,
         currentPosition: position,
       }));
       return true;
-    });
-  }, [queueOperation]);
+    }).catch(e => console.error("Error seeking:", e));
+  }, [executeOperation]);
 
-  // Toggle shuffle
+  // Toggle shuffle - simple state update
   const toggleShuffle = useCallback(() => {
-    setPlaybackState((prev) => ({
+    setPlaybackState(prev => ({
       ...prev,
       shuffle: !prev.shuffle,
     }));
   }, []);
 
-  // Toggle repeat
+  // Toggle repeat - simple state update
   const toggleRepeat = useCallback(() => {
-    setPlaybackState((prev) => {
+    setPlaybackState(prev => {
       const modes: ("off" | "all" | "one")[] = ["off", "all", "one"];
       const currentIndex = modes.indexOf(prev.repeat);
       const nextIndex = (currentIndex + 1) % modes.length;
@@ -404,61 +468,97 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     });
   }, []);
 
-  // Set volume - queued operation
-  const setVolume = useCallback(async (volume: number) => {
-    queueOperation(async () => {
+  // Set volume - simplified
+  const setVolume = useCallback((volume: number) => {
+    executeOperation(async () => {
       if (!soundRef.current) return false;
       
       const status = await soundRef.current.getStatusAsync();
       if (!status.isLoaded) return false;
       
       await soundRef.current.setVolumeAsync(volume);
-      setPlaybackState((prev) => ({
+      
+      // Update only volume for better performance
+      setPlaybackState(prev => ({
         ...prev,
         volume,
       }));
       return true;
-    });
-  }, [queueOperation]);
+    }).catch(e => console.error("Error setting volume:", e));
+  }, [executeOperation]);
 
-  // Toggle expanded view
-  const toggleExpanded = useCallback(() => {
-    setIsExpanded((prev) => !prev);
+  // Toggle mini player visibility
+  const togglePlayerExpansion = useCallback(() => {
+    setUiState(prev => ({
+      ...prev,
+      isExpanded: !prev.isExpanded,
+    }));
   }, []);
 
-  // Context value
-  const value: MusicPlayerContextType = {
-    playbackState,
+  // Dismiss the error message
+  const dismissError = useCallback(() => {
+    setUiState(prev => ({
+      ...prev,
+      errorMessage: null,
+    }));
+  }, []);
+
+  // Create memoized context value to avoid unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    // Player state
     currentSong,
-    controlsVisible,
-    isExpanded,
-    isLoading,
-    errorMessage,
+    playbackState,
+    
+    // UI state
+    uiState,
+    
+    // Player controls
+    playSong,
     togglePlay,
     skipToNext,
     skipToPrevious,
     seek,
+    addToQueue,
+    clearQueue,
     toggleShuffle,
     toggleRepeat,
     setVolume,
-    toggleExpanded,
+    
+    // UI controls
+    togglePlayerExpansion,
+    dismissError,
+  }), [
+    currentSong,
+    playbackState,
+    uiState,
     playSong,
+    togglePlay,
+    skipToNext,
+    skipToPrevious,
+    seek,
     addToQueue,
     clearQueue,
-  };
+    toggleShuffle,
+    toggleRepeat,
+    setVolume,
+    togglePlayerExpansion,
+    dismissError,
+  ]);
 
   return (
-    <MusicPlayerContext.Provider value={value}>
+    <MusicPlayerContext.Provider value={contextValue}>
       {children}
     </MusicPlayerContext.Provider>
   );
 };
 
-// Hook for using the music player
-export const useMusicPlayer = () => {
+// Custom hook for using the music player context
+export const useMusicPlayer = (): MusicPlayerContextType => {
   const context = useContext(MusicPlayerContext);
+  
   if (context === undefined) {
     throw new Error("useMusicPlayer must be used within a MusicPlayerProvider");
   }
+  
   return context;
 };

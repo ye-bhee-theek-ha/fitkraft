@@ -338,13 +338,18 @@ export interface PlaybackState {
   volume: number;
 }
 
-export interface MusicPlayerContextType {
-  playbackState: PlaybackState;
-  currentSong: Song | null;
+
+export type UiState = {
   controlsVisible: boolean;
   isExpanded: boolean;
   isLoading: boolean;
   errorMessage: string | null;
+};
+
+export interface MusicPlayerContextType {
+  playbackState: PlaybackState;
+  currentSong: Song | null;
+  uiState: UiState;
   togglePlay: () => void;
   skipToNext: () => void;
   skipToPrevious: () => void;
@@ -352,7 +357,7 @@ export interface MusicPlayerContextType {
   toggleShuffle: () => void;
   toggleRepeat: () => void;
   setVolume: (volume: number) => void;
-  toggleExpanded: () => void;
+  togglePlayerExpansion: () => void;
   playSong: (song: Song, replaceQueue?: boolean) => void;
   addToQueue: (song: Song) => void;
   clearQueue: () => void;

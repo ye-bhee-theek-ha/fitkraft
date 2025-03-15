@@ -32,7 +32,7 @@ const MusicPlayerCard: React.FC<MusicPlayerCardProps> = ({
   if (!currentSong) return null;
 
   return (
-    <View className="bg-primary_dark p-3 rounded-3xl">
+    <View className="bg-primary_dark p-3 rounded-3xl w-full">
       <View className="flex-row items-center m-2 mb-2 mt-0">
         <Ionicons name="musical-notes" size={24} color="white" />
         <Text className="text-white text-text font-semibold ml-2">Now Playing</Text>

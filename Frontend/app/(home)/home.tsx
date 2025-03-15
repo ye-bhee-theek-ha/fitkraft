@@ -69,30 +69,56 @@ export const DietaryData: DietaryItem[] = [
 
 const Home = () => {
 
-  const { currentSong, toggleExpanded, playbackState, skipToPrevious, togglePlay, skipToNext } = useMusicPlayer();
+  const { currentSong, togglePlayerExpansion, playbackState, skipToPrevious, togglePlay, skipToNext } = useMusicPlayer();
+  
+  const initialTranslateX = useSharedValue(0);
+
+  const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+  const PAGE_SPACING = 40;
+  const PAGE_WIDTH = SCREEN_WIDTH + PAGE_SPACING;
+  const NUM_PAGES = currentSong ? 3 : 2; // Adjust based on your data
   
 
-  const translateX = useSharedValue(0)
+  const translateX = useSharedValue(0);
+
 
   const panGesture = Gesture.Pan()
-    .onStart(() => {
-      translateX.value = translateX.value
-    })
-    .onUpdate((event) => {
-      translateX.value = event.translationX * 0.1 + translateX.value
-    })
-    .onEnd((event) => {
-      const shouldSnapToEnd =
-        event.velocityX < -500 ||
-        (event.velocityX >= -5000 && event.velocityX <= 5000 && translateX.value > SCREEN_WIDTH * 0.5)
-      translateX.value = withSpring(shouldSnapToEnd ? -SCREEN_WIDTH - 40 : 0, { velocity: 1, stiffness: 70 })
-    })
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: translateX.value }],
-    }
+  .onStart(() => {
+    // Capture starting translation if needed (not shown here)
   })
+  .onUpdate((event) => {
+    translateX.value = event.translationX * 0.1 + translateX.value;
+    // In many cases you might want to use a worklet-safe pattern here (storing a start value)
+  })
+  .onEnd((event) => {
+    'worklet';
+    // Calculate the current page based on the translation value
+    let currentPage = Math.round(-translateX.value / PAGE_WIDTH);
+    let nextPage = currentPage;
+
+    // Define a threshold of half the screen width
+    const threshold = SCREEN_WIDTH * 0.3;
+
+    // Decide if we should swipe to the next page (left swipe)
+    if (event.velocityX < -500  || (event.velocityX >= -5000 && event.velocityX <= 5000 && translateX.value < -threshold)) {
+      nextPage = Math.min(currentPage + 1, NUM_PAGES - 1);
+    }
+    // Decide if we should swipe to the previous page (right swipe)
+    if (event.velocityX > 500 || (event.velocityX >= -5000 && event.velocityX <= 5000 && translateX.value > threshold)) {
+      nextPage = Math.max(currentPage - 1, 0);
+    }
+
+    // Animate to the snapped position based on the page index.
+    translateX.value = withSpring(-nextPage * PAGE_WIDTH, {
+      velocity: event.velocityX,
+      stiffness: 70,
+    });
+  });
+  
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
 
   const workoutData = [
     {
@@ -163,7 +189,7 @@ const Home = () => {
                   </View>
                   <View className="w-20"/>
                   <View className="w-full">
-                  <MusicPlayerCard
+                    <MusicPlayerCard
                       currentSong={currentSong}
                       playbackState={playbackState}
                       togglePlay={togglePlay}
@@ -211,3 +237,5 @@ const Home = () => {
 
 
 export default Home
+
+

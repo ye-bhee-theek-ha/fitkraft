@@ -15,7 +15,7 @@ interface MiniPlayerProps {
 }
 
 const MiniPlayer: React.FC<MiniPlayerProps> = ({ style, indicatorStyle }) => {
-  const { currentSong, toggleExpanded, playbackState, skipToPrevious, togglePlay, skipToNext } = useMusicPlayer();
+  const { currentSong, togglePlayerExpansion, playbackState, skipToPrevious, togglePlay, skipToNext } = useMusicPlayer();
   const insets = useSafeAreaInsets();
 
   if (!currentSong) return null;
@@ -23,13 +23,13 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({ style, indicatorStyle }) => {
 
   // Define a tap gesture that toggles expanded state.
   const tapGesture = Gesture.Tap().onStart(() => {
-    runOnJS(toggleExpanded)();
+    runOnJS(togglePlayerExpansion)();
   });
 
   // Optionally, add a pan gesture to detect an upward swipe
   const panGesture = Gesture.Pan().onEnd((event) => {
     if (event.translationY < -50) {
-      runOnJS(toggleExpanded)();
+      runOnJS(togglePlayerExpansion)();
     }
   });
 
