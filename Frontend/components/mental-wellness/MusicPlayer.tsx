@@ -14,7 +14,7 @@ import FullPlayer from "./FullPlayer";
 import MiniPlayer from "./MiniPlayer";
 
 const MusicPlayerUI: React.FC = () => {
-  const { isExpanded, controlsVisible } = useMusicPlayer();
+  const { uiState } = useMusicPlayer();
   const insets = useSafeAreaInsets();
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
   
@@ -24,12 +24,12 @@ const MusicPlayerUI: React.FC = () => {
   
   // Update animation when expanded state changes
   React.useEffect(() => {
-    translateY.value = withSpring(isExpanded ? -screenHeight : 0, {
+    translateY.value = withSpring(uiState.isExpanded ? -screenHeight : 0, {
       damping: 20,
       stiffness: 90,
     });
-    indicatorOpacity.value = withTiming(isExpanded ? 0 : 1, { duration: 200 });
-  }, [isExpanded, screenHeight, translateY, indicatorOpacity]);
+    indicatorOpacity.value = withTiming(uiState.isExpanded ? 0 : 1, { duration: 200 });
+  }, [uiState.isExpanded, screenHeight, translateY, indicatorOpacity]);
   
   const containerStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
@@ -78,7 +78,7 @@ const MusicPlayerUI: React.FC = () => {
 
   useEffect (() => {
     console.log("rendering player")
-    console.log('controlsVisible :', controlsVisible )
+    console.log('controlsVisible :', uiState.controlsVisible )
   }, [])
 
   return (

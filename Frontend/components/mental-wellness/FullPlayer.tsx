@@ -25,7 +25,7 @@ export const FullPlayer: React.FC<FullPlayerProps> = ({ style, screenHeight }) =
     toggleShuffle,
     toggleRepeat,
     setVolume,
-    toggleExpanded
+    togglePlayerExpansion
   } = useMusicPlayer();
   
   const insets = useSafeAreaInsets();
@@ -156,7 +156,7 @@ export const FullPlayer: React.FC<FullPlayerProps> = ({ style, screenHeight }) =
           }}
         >
           <TouchableOpacity
-            onPress={toggleExpanded}
+            onPress={togglePlayerExpansion}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <FontAwesome6 name="chevron-down" size={20} color="white" />
