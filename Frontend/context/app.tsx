@@ -17,7 +17,7 @@ export const AppProvider: React.FC<React.PropsWithChildren> = ({ children }) => 
 
 
   return (
-    <AppContext.Provider value={{ students, teachers, classes, setStudents, setTeachers, setClasses}}>
+    <AppContext.Provider value={{ }}>
       {children}
     </AppContext.Provider>
   );

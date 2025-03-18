@@ -155,12 +155,24 @@ export interface WeeklyWorkoutTasksProps {
 
 export type MealTimeName = "breakfast" | "lunch" | "dinner" | "snack" | "pre-workout" | "post-workout" | "workout"
 export interface DietaryItem {
+  UserId: string
+  Date: Date
+  Meals: MealItem[]
+  TotalCalories: number
+  TotalProtein: number 
+  TotalCarbs: number
+  TotalFats: number
+}
+
+export interface MealItem {
+  _id: string
   name: string
   time_name: MealTimeName
   time?: string
-  fats?: number
-  proteins?: number
-  carbohydrates?: number
+  calories: number
+  fats: number
+  proteins: number
+  carbohydrates: number
   completed: boolean
 }
 
