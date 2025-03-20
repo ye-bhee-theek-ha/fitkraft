@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '@/context/auth'; // Import useAuth hook
 import Constants from 'expo-constants';
+import { BASE_URL } from "@/constants/baseUrl";
 
 // Add interface at the top of the file, after imports
 interface Exercise {
@@ -42,15 +43,7 @@ const WorkoutList: React.FC = () => {
     const { user } = useAuth(); // Get current user from auth context
 
     // Get the development server URL when using Expo
-    const getDevServerUrl = () => {
-        const manifest = Constants.manifest2 || Constants.manifest;
-        const hostUri = (manifest as any)?.extra?.expoClient?.hostUri;
-        if (hostUri) {
-            const devServer = hostUri.split(':').slice(0, -1).join(':');
-            return `http://${devServer}:5000`;
-        }
-        return 'http://192.168.1.100:5000';  // Replace with your actual IP address
-    };
+
 
     useEffect(() => {
         fetchWorkouts();
@@ -59,7 +52,7 @@ const WorkoutList: React.FC = () => {
     const fetchWorkouts = async () => {
         try {
             setLoading(true);
-            const baseUrl = getDevServerUrl();
+            const baseUrl = BASE_URL;
             const response = await axios.get(`${baseUrl}/workout/get/user123`, {
                 headers: {
                     Authorization: `Bearer ${user?.token}`,
@@ -82,7 +75,7 @@ const WorkoutList: React.FC = () => {
                     message: err.message,
                     response: err.response?.data,
                     status: err.response?.status,
-                    baseUrl: getDevServerUrl() // Log the URL being used
+                    baseUrl: BASE_URL 
                 });
             } else {
                 setError('An unexpected error occurred');

@@ -40,7 +40,7 @@ export interface UserProfile {
   fullName: string;
   nickname?: string;
   email: string;
-  mobile: string;
+  mobile?: string;
   image?: string | null;
   BMI?: number;
 

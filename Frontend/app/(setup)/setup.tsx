@@ -241,7 +241,7 @@ const SetupScreen: React.FC = () => {
   };
 
   return (
-    <View className="h-screen">
+    <View className="h-screen bg-primary">
       <NotificationBanner ref={notificationBannerRef}/>
       <View className="flex-row items-center justify-between px-6 pb-4 pt-8">
         {currentStep > 0 && (

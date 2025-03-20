@@ -32,6 +32,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
 
+      console.log("login", email, password)
       await signIn(email, password);
 
     } catch (error) {
@@ -46,9 +47,9 @@ export default function LoginScreen() {
 
 
   return (
-    <ScrollView>
-      <SafeAreaView className='flex flex-1 h-screen mb-8'>
-        <View className='h-[30%] items-center justify-center'>
+    <ScrollView className='bg-primary'>
+      <SafeAreaView className='flex flex-1 mb-8'>
+        <View className='h-[25%] items-center justify-center'>
           <View className='h-24 w-24 mt-8 bg-primary_light rounded-lg'>
 
           </View>

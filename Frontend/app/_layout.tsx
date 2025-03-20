@@ -55,11 +55,11 @@ function RootLayoutNav() {
   return (
     <>
       <StatusBar style="light"/>
-      <AuthProvider>
-        {/* <AppProvider> */}
+        <AppProvider>
+          <AuthProvider>
             <Slot/>
-        {/* </AppProvider> */}
-      </AuthProvider>
+          </AuthProvider>
+        </AppProvider>
     </>
    
   );

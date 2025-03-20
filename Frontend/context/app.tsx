@@ -1,6 +1,14 @@
+import { User, UserProfile } from '@/constants/types';
 import React, { createContext, useState, useEffect } from 'react';
 
-const AppContext = createContext<undefined>(undefined);
+interface AppContextType {
+  user: UserProfile | null;
+  setUser: React.Dispatch<React.SetStateAction<UserProfile | null>>;
+  jwt: string | null;
+  setJwt: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function useApp() {
   const context = React.useContext(AppContext);
@@ -11,13 +19,12 @@ export function useApp() {
 }
 
 export const AppProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const [students, setStudents] = useState([]);
-  const [teachers, setTeachers] = useState([]);
-  const [classes, setClasses] = useState([]);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [jwt, setJwt] = useState<string | null>(null);
 
 
   return (
-    <AppContext.Provider value={{ }}>
+    <AppContext.Provider value={{ user, setUser, jwt, setJwt }}>
       {children}
     </AppContext.Provider>
   );

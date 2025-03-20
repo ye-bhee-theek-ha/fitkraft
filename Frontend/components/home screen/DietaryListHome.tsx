@@ -76,6 +76,7 @@ const DietaryList: React.FC = () => {
         try {
             setLoading(true);
             const baseUrl = getDevServerUrl();
+            console.log(baseUrl)
             const response = await axios.get(`${baseUrl}/dietery/get/user123`, {
                 headers: {
                     Authorization: `Bearer ${user?.token}`,

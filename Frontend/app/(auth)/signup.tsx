@@ -52,10 +52,13 @@ export default function SignUpScreen() {
     if (!emailOrPhone.trim()) {
       newErrors.emailOrPhone = 'Email or Phone Number is required';
       hasError = true;
-    } else if (!isValidEmail(emailOrPhone) && !isValidPhone(emailOrPhone)) {
+    } 
+    
+    else if (!isValidEmail(emailOrPhone)) {
       newErrors.emailOrPhone = 'Enter a valid Email or Phone Number';
       hasError = true;
     }
+    
     if (!password.trim()) {
       newErrors.password = 'Password is required';
       hasError = true;
@@ -73,8 +76,14 @@ export default function SignUpScreen() {
     setLoading(true);
 
     try {
-      await signUp({ fullName, username, emailOrPhone, password });
+      await signUp({
+        fullName,
+        nickname: username, 
+        email: emailOrPhone, 
+        password,
+      });
     } catch (err) {
+      console.error('Sign-up error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Sign-up failed. Please try again.';
       setErrors((prev) => ({ ...prev, emailOrPhone: errorMessage }));
     } finally {
@@ -83,7 +92,7 @@ export default function SignUpScreen() {
   };
 
   return (
-    <ScrollView>
+    <ScrollView className="bg-primary">
       <SafeAreaView className="items-center h-full my-12">
         <Text className="text-white font-bold text-heading font-Display my-12">Sign Up</Text>
         
@@ -112,7 +121,7 @@ export default function SignUpScreen() {
 
           {/* Email or Phone */}
           <View className="w-full mb-4">
-            <Text className="text-btn_title text-white mb-2 pl-3">Email or Phone Number</Text>
+            <Text className="text-btn_title text-white mb-2 pl-3">Email</Text>
             <TextInput
               className="h-12 px-2 rounded-xl text-btn_title bg-textInput_bg focus:border-2 border-primary_light focus:shadow-md"
               value={emailOrPhone}
@@ -201,4 +210,3 @@ export default function SignUpScreen() {
 }
 
 
-// smaple
