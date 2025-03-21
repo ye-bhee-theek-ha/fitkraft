@@ -16,7 +16,6 @@ import axios from 'axios'
 import { useAuth } from '@/context/auth'
 import Constants from 'expo-constants'
 import { BASE_URL } from "@/constants/baseUrl"
-import { useApp } from "@/context/app"
 
 interface Meal {
     _id: string;
@@ -54,8 +53,6 @@ const DietaryList: React.FC = () => {
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const tooltipTimeout = useRef<NodeJS.Timeout>();
     const { user } = useAuth();
-
-    const {jwt} = useApp()
     
     useEffect(() => {
         fetchDiet();
@@ -69,9 +66,9 @@ const DietaryList: React.FC = () => {
     const fetchDiet = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`${BASE_URL}/dietery/get`, {
+            const response = await axios.get(`${BASE_URL}/dietery/get/user123`, {
                 headers: {
-                    Authorization: `Bearer ${jwt}`,
+                    Authorization: `Bearer ${user?.token}`,
                 },
                 timeout: 5000,
             });
