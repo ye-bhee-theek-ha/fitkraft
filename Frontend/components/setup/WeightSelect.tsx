@@ -177,6 +177,7 @@ const WeightSelect = forwardRef<WeightSelectRef, WeightSelectProps>(({ data = Ar
   };
 
   const handleScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    scrollIndex.current.whole += 42;
     console.log('Scroll Index:', scrollIndex.current);
   };
 

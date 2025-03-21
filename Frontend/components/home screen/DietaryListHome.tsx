@@ -69,7 +69,7 @@ const DietaryList: React.FC = () => {
     const fetchDiet = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`${BASE_URL}/dietery/get/user123`, {
+            const response = await axios.get(`${BASE_URL}/dietery/get`, {
                 headers: {
                     Authorization: `Bearer ${jwt}`,
                 },

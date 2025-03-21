@@ -32,54 +32,59 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
     
   const signIn = async (email: string, password: string) => {
     try {
+        if (!email || !password) {
+            throw new Error('Email and password are required.');
+        }
+
         const response = await axios.post(`${BASE_URL}/user/login`, {
-            "email": email,
-            "password": password,
+            email,
+            password,
         }, {
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
         });
-          console.log("inside login")
-          const userData = response.data;
 
-          const splitNumber = (num: number) => ({
-            whole: Math.floor(num),
-            fraction: Number((num % 1).toFixed(2)) 
-          });
-          const userDetails: UserProfile = {
-              fullName: userData.name, 
-              nickname: userData.nickname,
-              email: userData.email,
-              mobile: "",
-              image: null,
-          };
-          
+        const userData = response.data;
 
-          setUser(userDetails);
-          setJwt(userData.token);
+        if (!userData.token) {
+            throw new Error(userData.message || 'Login failed. Please try again.');
+        }
 
-          console.log("signed in user", userDetails);
+        const userDetails: UserProfile = {
+            fullName: userData.name, 
+            nickname: userData.nickname || '',
+            email: userData.email,
+            image: null,
+        };
 
-          // Check onboarding status
-          const isOnboardingComplete = await checkOnboardingStatus(userData.token);
-          if (isOnboardingComplete) {
-            router.replace("/(home)/home"); 
-          } else {
-            router.replace("/(setup)/setup"); 
-          }
+        setUser(userDetails);
+        setJwt(userData.token);
 
-          return;
-        
 
+        console.log("Signed in user:", userDetails);
+        console.log(jwt, "jwt");
+       
+    
     } catch (error) {
+
         if (axios.isAxiosError(error)) {
-            throw new Error(error.response?.data?.message || 'An error occurred during sign in.');
+            const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
+            alert(errorMessage);
         } else {
-            throw new Error('An unknown error occurred.');
+            alert('An unexpected error occurred. Please try again.');
         }
     }
-  };
+};
+
+  React.useEffect(() => {
+    if (jwt) {
+        console.log("Updated JWT:", jwt);
+        checkOnboardingStatus(jwt).then((isOnboardingComplete) => {
+          console.log("Onboarding status:", isOnboardingComplete);
+            router.replace(isOnboardingComplete ? "/(home)/home" : "/(setup)/setup");
+        });
+    }
+  }, [jwt]);
+
 
   const checkOnboardingStatus = async (jwt: string) => {
     try {
@@ -91,10 +96,9 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
         timeout: 5000,
       });
 
-      if (response.data.status === "success") {
-        return true;
-      } else {
-        return false;
+
+      if (response.data) {
+        return response.data.onboardingComplete;
       }
     } catch (error) {
       return false; 
@@ -147,12 +151,24 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
     }
   };
 
+  const convertToFloat = (data: { whole: number; fraction?: number }): number => {
+    return data.whole + (data.fraction ? data.fraction / 10 : 0);
+  };
+
   const completeOnboarding = async (onboardingData:Onboarding) => {
     try {
-      
+
+      const processedData = {
+        ...onboardingData,
+        weight: onboardingData.weight ? convertToFloat(onboardingData.weight) : undefined,
+        height: onboardingData.height ? convertToFloat(onboardingData.height) : undefined,
+      };
+
       const response = await axios.post(
         `${BASE_URL}/user/onboard`,
-        onboardingData,
+        {
+          ...processedData
+        },
         {
           headers: {
             'Content-Type': 'application/json',
@@ -161,7 +177,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
         }
       );
       
-      console.log(response.data.message);
+      console.log(response);
       
       return response.data;
     } catch (error:any) {
@@ -176,7 +192,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut, signUp }}>
+    <AuthContext.Provider value={{ user, signIn, signOut, signUp, completeOnboarding }}>
       {children}
     </AuthContext.Provider>
   );

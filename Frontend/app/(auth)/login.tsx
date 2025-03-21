@@ -34,6 +34,8 @@ export default function LoginScreen() {
 
       console.log("login", email, password)
       await signIn(email, password);
+      // await signIn("ali@gmail.com", "123");
+
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -92,6 +94,13 @@ export default function LoginScreen() {
             </View>
 
           </View>
+          {error !== "" && (
+            <View className='w-full mx-12 items-center mt-2'>
+              <Text className='text-error text-extra_small'>
+                {error}
+              </Text>
+            </View>
+          )}
 
           <View className='w-full my-6 items-center'>
             <AppButton

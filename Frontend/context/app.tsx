@@ -1,6 +1,7 @@
 import { User, UserProfile } from '@/constants/types';
 import React, { createContext, useState, useEffect } from 'react';
 
+
 interface AppContextType {
   user: UserProfile | null;
   setUser: React.Dispatch<React.SetStateAction<UserProfile | null>>;

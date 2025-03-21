@@ -11,6 +11,7 @@ import axios from 'axios';
 import { useAuth } from '@/context/auth'; // Import useAuth hook
 import Constants from 'expo-constants';
 import { BASE_URL } from "@/constants/baseUrl";
+import { useApp } from "@/context/app";
 
 // Add interface at the top of the file, after imports
 interface Exercise {
@@ -40,7 +41,9 @@ const WorkoutList: React.FC = () => {
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { user } = useAuth(); // Get current user from auth context
+    const { user } = useApp();
+    const { jwt } = useAuth();
+
 
     // Get the development server URL when using Expo
 
@@ -52,10 +55,9 @@ const WorkoutList: React.FC = () => {
     const fetchWorkouts = async () => {
         try {
             setLoading(true);
-            const baseUrl = BASE_URL;
-            const response = await axios.get(`${baseUrl}/workout/get/user123`, {
+            const response = await axios.get(`${BASE_URL}/workout/get`, {
                 headers: {
-                    Authorization: `Bearer ${user?.token}`,
+                    Authorization: `Bearer ${jwt}`,
                 },
                 timeout: 5000,
             });
