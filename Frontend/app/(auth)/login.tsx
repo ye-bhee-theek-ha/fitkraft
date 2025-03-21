@@ -48,7 +48,7 @@ export default function LoginScreen() {
 
   return (
     <ScrollView className='bg-primary'>
-      <SafeAreaView className='flex flex-1 mb-8'>
+      <SafeAreaView className='flex flex-1 mb-12'>
         <View className='h-[25%] items-center justify-center'>
           <View className='h-24 w-24 mt-8 bg-primary_light rounded-lg'>
 

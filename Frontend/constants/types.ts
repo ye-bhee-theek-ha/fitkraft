@@ -37,20 +37,36 @@ export interface User {
 
 
 export interface UserProfile {
+  _id?: string;
   fullName: string;
   nickname?: string;
   email: string;
   mobile?: string;
   image?: string | null;
-  BMI?: number;
-
-  // Onboarding-related fields:
+  bmi?: number;
+  bmr?: number;
+  onboardingComplete?: boolean;
+  // Include onboarding data
   gender?: 'male' | 'female' | string;
   age?: number;
   weight?: WeightOrHeight;
   height?: WeightOrHeight;
   goal?: string;
   activityLevel?: string;
+}
+
+export interface Onboarding {
+  gender?: 'male' | 'female' | string;
+  age?: number;
+  weight?: WeightOrHeight;
+  height?: WeightOrHeight;
+  goal?: string;
+  activityLevel?: string;
+}
+
+
+export interface SignUpData extends UserProfile {
+  password: string;
 }
 
 export interface ProfileFormProps {

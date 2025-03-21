@@ -9,8 +9,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 export default function SignUpScreen() {
   const { signUp } = useAuth();
   const [fullName, setFullName] = useState('');
-  const [username, setUsername] = useState('');
-  const [emailOrPhone, setEmailOrPhone] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,8 +19,8 @@ export default function SignUpScreen() {
 
   const [errors, setErrors] = useState({
     fullName: '',
-    username: '',
-    emailOrPhone: '',
+    nickname: '',
+    email: '',
     password: '',
     confirmPassword: '',
   });
@@ -31,31 +31,29 @@ export default function SignUpScreen() {
   const handleSignUp = async () => {
     setErrors({
       fullName: '',
-      username: '',
-      emailOrPhone: '',
+      nickname: '',
+      email: '',
       password: '',
       confirmPassword: '',
     });
 
     let hasError = false;
-    const newErrors: typeof errors = { fullName: '', username: '', emailOrPhone: '', password: '', confirmPassword: '' };
+    const newErrors = { fullName: '', nickname: '', email: '', password: '', confirmPassword: '' };
 
     // Validation
     if (!fullName.trim()) {
       newErrors.fullName = 'Full Name is required';
       hasError = true;
     }
-    if (!username.trim()) {
-      newErrors.username = 'Username is required';
+    if (!nickname.trim()) {
+      newErrors.nickname = 'Nickname is required';
       hasError = true;
     }
-    if (!emailOrPhone.trim()) {
-      newErrors.emailOrPhone = 'Email or Phone Number is required';
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
       hasError = true;
-    } 
-    
-    else if (!isValidEmail(emailOrPhone)) {
-      newErrors.emailOrPhone = 'Enter a valid Email or Phone Number';
+    } else if (!isValidEmail(email)) {
+      newErrors.email = 'Enter a valid Email';
       hasError = true;
     }
     
@@ -78,14 +76,14 @@ export default function SignUpScreen() {
     try {
       await signUp({
         fullName,
-        nickname: username, 
-        email: emailOrPhone, 
+        nickname, 
+        email, 
         password,
       });
     } catch (err) {
       console.error('Sign-up error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Sign-up failed. Please try again.';
-      setErrors((prev) => ({ ...prev, emailOrPhone: errorMessage }));
+      setErrors((prev) => ({ ...prev, email: errorMessage }));
     } finally {
       setLoading(false);
     }
@@ -110,26 +108,26 @@ export default function SignUpScreen() {
 
           {/* Username */}
           <View className="w-full mb-4">
-            <Text className="text-btn_title text-white mb-2 pl-3">Username</Text>
+            <Text className="text-btn_title text-white mb-2 pl-3">Nickname</Text>
             <TextInput
               className="h-12 px-2 rounded-xl text-btn_title bg-textInput_bg focus:border-2 border-primary_light focus:shadow-md"
-              value={username}
-              onChangeText={setUsername}
+              value={nickname}
+              onChangeText={setNickname}
             />
-            {errors.username && <Text className="text-error text-sm mt-1 pl-3">{errors.username}</Text>}
+            {errors.nickname && <Text className="text-error text-sm mt-1 pl-3">{errors.nickname}</Text>}
           </View>
 
-          {/* Email or Phone */}
+          {/* Email */}
           <View className="w-full mb-4">
             <Text className="text-btn_title text-white mb-2 pl-3">Email</Text>
             <TextInput
               className="h-12 px-2 rounded-xl text-btn_title bg-textInput_bg focus:border-2 border-primary_light focus:shadow-md"
-              value={emailOrPhone}
-              onChangeText={setEmailOrPhone}
+              value={email}
+              onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="default"
             />
-            {errors.emailOrPhone && <Text className="text-error text-sm mt-1 pl-3">{errors.emailOrPhone}</Text>}
+            {errors.email && <Text className="text-error text-sm mt-1 pl-3">{errors.email}</Text>}
           </View>
 
           {/* Password */}

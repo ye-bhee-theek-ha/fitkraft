@@ -15,6 +15,8 @@ import { Ionicons } from "@expo/vector-icons"
 import axios from 'axios'
 import { useAuth } from '@/context/auth'
 import Constants from 'expo-constants'
+import { BASE_URL } from "@/constants/baseUrl"
+import { useApp } from "@/context/app"
 
 interface Meal {
     _id: string;
@@ -52,17 +54,9 @@ const DietaryList: React.FC = () => {
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const tooltipTimeout = useRef<NodeJS.Timeout>();
     const { user } = useAuth();
-    
-    const getDevServerUrl = () => {
-        const manifest = Constants.manifest2 || Constants.manifest;
-        const hostUri = (manifest as any)?.extra?.expoClient?.hostUri;
-        if (hostUri) {
-            const devServer = hostUri.split(':').slice(0, -1).join(':');
-            return `http://${devServer}:5000`;
-        }
-        return 'http://192.168.1.100:5000';
-    };
 
+    const {jwt} = useApp()
+    
     useEffect(() => {
         fetchDiet();
         return () => {
@@ -75,11 +69,9 @@ const DietaryList: React.FC = () => {
     const fetchDiet = async () => {
         try {
             setLoading(true);
-            const baseUrl = getDevServerUrl();
-            console.log(baseUrl)
-            const response = await axios.get(`${baseUrl}/dietery/get/user123`, {
+            const response = await axios.get(`${BASE_URL}/dietery/get/user123`, {
                 headers: {
-                    Authorization: `Bearer ${user?.token}`,
+                    Authorization: `Bearer ${jwt}`,
                 },
                 timeout: 5000,
             });
