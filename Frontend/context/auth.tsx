@@ -24,10 +24,12 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
     console.log(user)
     // router.replace("/(setup)/setup")
 
-    if (user === null && rootSegment !== "(auth)") {
-      router.replace("/(auth)/login")
-    }
-  }, [user]);
+    router.replace('/(home)/home')
+    setUser({fullName: 'ali', nickname: 'ali', email: 'ali@gmail.com', mobile: '1234567890', image: null})
+    // if (user === null && rootSegment !== "(auth)") {
+    //   router.replace("/(auth)/login")
+    // }
+  }, []);
 
     
   const signIn = async (email: string, password: string) => {

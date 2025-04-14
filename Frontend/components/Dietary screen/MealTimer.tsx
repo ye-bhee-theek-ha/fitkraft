@@ -26,7 +26,7 @@ import Animated, {
   useAnimatedStyle,
   Easing,
 } from "react-native-reanimated";
-import type { DietaryItem, DietaryTimeInterfaceProps, MealTimeName, TooltipState } from "@/constants/types";
+import type { DietaryItem, DietaryTimeInterfaceProps, MealTimeName, TooltipState,MealItem } from "@/constants/types";
 import EditMealModal from "./EditMealModal"
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -52,7 +52,8 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
   const flatListRef = useRef<FlatList<DietaryItem>>(null);
   const [selectedMealIndex, setSelectedMealIndex] = useState(0);
   const [tooltip, setTooltip] = useState<TooltipState>({ visible: false, text: "", index: -1 });
-  
+  const [diet, setDiet] = useState<DietaryItem | null>(null);
+  const [meals, setMeals] = useState<MealItem[]>([]);
   // Shared value for selected icon index to drive animated scaling/zIndex.
   const selectedIndexSV = useSharedValue(0);
 

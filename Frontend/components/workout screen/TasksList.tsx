@@ -6,28 +6,8 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useAuth } from '@/context/auth'
 import Constants from 'expo-constants'
+import { Workout,Exercise } from "@/constants/types"
 
-interface Exercise {
-    name: string;
-    type: string;
-    duration: {
-        minutes: number;
-        seconds: number;
-    };
-    sets: number;
-    reps: number;
-    weight: number;
-    completed: boolean;
-}
-
-interface Workout {
-    _id: string;
-    userId: string;
-    date: string;
-    duration: number;
-    caloriesBurned: number;
-    exercises: Exercise[];
-}
 
 const TasksList: React.FC = () => {
     const [workouts, setWorkouts] = useState<Workout | null>(null);

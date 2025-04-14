@@ -101,18 +101,22 @@ export interface Duration {
   seconds: number;
 }
 export interface Exercise {
-  name: string
-  duration: Duration
-  type?: WorkoutType
-  repetitions: number
-  completed: boolean
-  caloriesBurned: number
+  name: string;
+    type: string;
+    duration: Duration,
+    sets: number;
+    reps: number;
+    weight: number;
+    completed: boolean;
 }
 
-export interface WorkoutData {
-  date: string
-  userID: string
-  Exercises: Exercise[]
+export interface Workout {
+  _id: string;
+  userId: string;
+  date: string;
+  duration: number;
+  caloriesBurned: number;
+  exercises: Exercise[];
 }
 
 
@@ -155,25 +159,30 @@ export interface WeeklyWorkoutTasksProps {
 
 export type MealTimeName = "breakfast" | "lunch" | "dinner" | "snack" | "pre-workout" | "post-workout" | "workout"
 export interface DietaryItem {
-  UserId: string
-  Date: Date
-  Meals: MealItem[]
-  TotalCalories: number
-  TotalProtein: number 
-  TotalCarbs: number
-  TotalFats: number
+  _id: string;
+    UserId: string;
+    Date: string;
+    Meals: MealItem[];
+    TotalCalories: number;
+    TotalProtein: number;
+    TotalCarbs: number;
+    TotalFats: number;
 }
 
 export interface MealItem {
-  _id: string
-  name: string
-  time_name: MealTimeName
-  time?: string
-  calories: number
-  fats: number
-  proteins: number
-  carbohydrates: number
-  completed: boolean
+  _id: string;
+  Time: string;
+  Name: string;
+  Calories: number;
+  Protein: number;
+  Carbs: number;
+  Fats: number;
+  Ingredients: string[];
+  Instructions: string;
+  Image: string;
+  Category: MealTimeName;
+  UserCreated_ID: string;
+  completed: boolean;
 }
 
 // menatl wellness types
@@ -231,7 +240,7 @@ export interface WorkoutListProps {
 }
 
 export interface WorkoutProgressListProps {
-  WorkoutDataHistory: WorkoutData[]
+  WorkoutDataHistory: Workout[]
   currentDate: Date
 }
 

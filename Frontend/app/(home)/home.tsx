@@ -9,66 +9,67 @@ import { BarChart } from "react-native-gifted-charts"
 import { DietaryItem } from "@/constants/types"
 import MusicPlayerCard from "@/components/home screen/Music"
 import { useMusicPlayer } from "@/context/MusicPlayer"
+import { useApp } from "@/context/app"
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window")
 
-export const DietaryData: DietaryItem[] = [
-  {
-    name: "Oatmeal with Fruits",
-    time_name: "breakfast",
-    time: "07:30",
-    fats: 5,
-    proteins: 10,
-    carbohydrates: 30,
-    completed: true,
-  },
-  {
-    name: "Chicken Salad",
-    time_name: "lunch",
-    time: "12:30",
-    fats: 15,
-    proteins: 25,
-    carbohydrates: 10,
-    completed: false,
-  },
-  {
-    name: "Protein Shake",
-    time_name: "pre-workout",
-    fats: 2,
-    proteins: 20,
-    carbohydrates: 5,
-    completed: false,
-  },
-  {
-    name: "Grilled Salmon",
-    time_name: "dinner",
-    time: "19:30",
-    fats: 20,
-    proteins: 30,
-    carbohydrates: 0,
-    completed: true,
-  },
-  {
-    name: "Greek Yogurt",
-    time_name: "snack",
-    time: "10:30",
-    fats: 3,
-    proteins: 15,
-    carbohydrates: 8,
-    completed: true,
-  },
-  {
-    name: "Recovery Smoothie",
-    time_name: "post-workout",
-    fats: 4,
-    proteins: 25,
-    carbohydrates: 35,
-    completed: false,
-  },
-]
+// export const DietaryData: DietaryItem[] = [
+//   {
+//     name: "Oatmeal with Fruits",
+//     time_name: "breakfast",
+//     time: "07:30",
+//     fats: 5,
+//     proteins: 10,
+//     carbohydrates: 30,
+//     completed: true,
+//   },
+//   {
+//     name: "Chicken Salad",
+//     time_name: "lunch",
+//     time: "12:30",
+//     fats: 15,
+//     proteins: 25,
+//     carbohydrates: 10,
+//     completed: false,
+//   },
+//   {
+//     name: "Protein Shake",
+//     time_name: "pre-workout",
+//     fats: 2,
+//     proteins: 20,
+//     carbohydrates: 5,
+//     completed: false,
+//   },
+//   {
+//     name: "Grilled Salmon",
+//     time_name: "dinner",
+//     time: "19:30",
+//     fats: 20,
+//     proteins: 30,
+//     carbohydrates: 0,
+//     completed: true,
+//   },
+//   {
+//     name: "Greek Yogurt",
+//     time_name: "snack",
+//     time: "10:30",
+//     fats: 3,
+//     proteins: 15,
+//     carbohydrates: 8,
+//     completed: true,
+//   },
+//   {
+//     name: "Recovery Smoothie",
+//     time_name: "post-workout",
+//     fats: 4,
+//     proteins: 25,
+//     carbohydrates: 35,
+//     completed: false,
+//   },
+// ]
 
 const Home = () => {
-
+  const {dietaryPlan} = useApp()
   const { currentSong, togglePlayerExpansion, playbackState, skipToPrevious, togglePlay, skipToNext } = useMusicPlayer();
   
   const initialTranslateX = useSharedValue(0);
@@ -181,7 +182,7 @@ const Home = () => {
               <GestureDetector gesture={panGesture}>
                 <Animated.View className="w-[90%] flex-row mb-6" style={animatedStyle}>
                   <View className="w-full">
-                    <DietaryList diets={DietaryData} />
+                    {dietaryPlan && <DietaryList />}
                   </View>
                   <View className="w-20"/>
                   <View className="w-full">

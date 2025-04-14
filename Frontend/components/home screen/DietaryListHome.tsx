@@ -15,42 +15,19 @@ import { Ionicons } from "@expo/vector-icons"
 import axios from 'axios'
 import { useAuth } from '@/context/auth'
 import Constants from 'expo-constants'
+import { MealItem,DietaryItem } from "@/constants/types"
 
-interface Meal {
-    _id: string;
-    Time: string;
-    Name: string;
-    Calories: number;
-    Protein: number;
-    Carbs: number;
-    Fats: number;
-    Ingredients: string[];
-    Instructions: string;
-    Image: string;
-    Category: string;
-    UserCreated_ID: string;
-    completed: boolean;
-}
 
-interface Diet {
-    _id: string;
-    UserId: string;
-    Date: string;
-    Meals: Meal[];
-    TotalCalories: number;
-    TotalProtein: number;
-    TotalCarbs: number;
-    TotalFats: number;
-}
 
 const DietaryList: React.FC = () => {
-    const [diet, setDiet] = useState<Diet | null>(null);
-    const [meals, setMeals] = useState<Meal[]>([]);
+    const [diet, setDiet] = useState<DietaryItem | null>(null);
+    const [meals, setMeals] = useState<MealItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [tooltip, setTooltip] = useState<TooltipState>({ visible: false, text: "", index: -1 });
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const tooltipTimeout = useRef<NodeJS.Timeout>();
+    
     const { user } = useAuth();
     
     const getDevServerUrl = () => {
@@ -84,8 +61,8 @@ const DietaryList: React.FC = () => {
                 timeout: 5000,
             });
             console.log('Diet Response:', response.data);
-            const dietData: Diet = response.data[0] || null;
-            const mealsData: Meal[] = dietData?.Meals || [];
+            const dietData: DietaryItem = response.data[0] || null;
+            const mealsData: MealItem[] = dietData?.Meals || [];
             setDiet(dietData);
             setMeals(mealsData);
             setError(null);

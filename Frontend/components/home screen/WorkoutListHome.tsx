@@ -11,29 +11,9 @@ import axios from 'axios';
 import { useAuth } from '@/context/auth'; // Import useAuth hook
 import Constants from 'expo-constants';
 import { BASE_URL } from "@/constants/baseUrl";
+import { Workout,Exercise } from "@/constants/types";
 
-// Add interface at the top of the file, after imports
-interface Exercise {
-    name: string;
-    type: string;
-    duration: {
-        minutes: number;
-        seconds: number;
-    };
-    sets: number;
-    reps: number;
-    weight: number;
-    completed: boolean;
-}
 
-interface Workout {
-    _id: string;
-    userId: string;
-    date: string;
-    duration: number;
-    caloriesBurned: number;
-    exercises: Exercise[];
-}
 
 const WorkoutList: React.FC = () => {
     const [workouts, setWorkouts] = useState<Workout | null>(null);
