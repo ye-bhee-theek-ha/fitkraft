@@ -14,6 +14,9 @@ import ProfileForm from '@/components/setup/ProfileInfo';
 
 import * as ImagePicker from "expo-image-picker"
 import NotificationBanner, { NotificationBannerRef } from '@/components/NotificationBanner';
+import { useAuth } from '@/context/auth';
+import { Onboarding } from '@/constants/types';
+import { router } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -26,6 +29,9 @@ interface OnboardingStep {
 
 const SetupScreen: React.FC = () => {
 
+  const [loading, setLoading] = useState(false);
+  const {completeOnboarding} = useAuth(); 
+
   const [currentStep, setCurrentStep] = useState<number>(0);
 
   // notification
@@ -36,7 +42,7 @@ const SetupScreen: React.FC = () => {
   };
   
   // Gender
-  const [selectedGender, setSelectedGender] = useState<string | null>(null)
+  const [selectedGender, setSelectedGender] = useState<string>("male")
 
   // Age
   const [selectedAge, setSelectedAge] = useState<number>(23);
@@ -51,48 +57,11 @@ const SetupScreen: React.FC = () => {
   const weightpickerRef = useRef<WeightSelectRef>(null);
 
   // Goal select
-  const [selectedGoal, setSelectedGoal] = useState<string | null>(null)
+  const [selectedGoal, setSelectedGoal] = useState<string>("lose")
 
   // Activity Level select
-  const [selectedActivityLevel, setSelectedActivityLevel] = useState<string | null>(null)
+  const [selectedActivityLevel, setSelectedActivityLevel] = useState<string>("")
 
-
-  //Profile Info Select
-  const [profile, setProfile] = useState({
-    fullName: "",
-    nickname: "",
-    email: "",
-    mobile: "",
-    image: null as string | null,
-  })
-
-
-  const handleImageSelect = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
-
-    if (status !== "granted") {
-      alert("Sorry, we need camera roll permissions to make this work!")
-      return
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    })
-
-    if (!result.canceled) {
-      setProfile((prev) => ({
-        ...prev,
-        image: result.assets[0].uri,
-      }))
-    }
-  }
-
-  const handleProfileChange = (field: string, value: string) => {
-    setProfile(prev => ({ ...prev, [field]: value }));
-  };
 
   const onboardingSteps: OnboardingStep[] = [
     { 
@@ -136,12 +105,6 @@ const SetupScreen: React.FC = () => {
       isValid: () => selectedActivityLevel !== null,
       error_msg: "Please select an activity level."
     },
-    {
-      key: "Profile",
-      component: ProfileForm,
-      isValid: () => !!profile.fullName && !!profile.email && !!profile.mobile,
-      error_msg: "Please complete your profile information."
-    },
   ];
 
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -171,12 +134,12 @@ const SetupScreen: React.FC = () => {
     }).start();
   };
 
-  const handleContinue = () => {
+  const handleContinue = async() => {
     if (!onboardingSteps[currentStep].isValid()) {
-      showBanner(onboardingSteps[currentStep].error_msg ?? "", "error")
+      showBanner(onboardingSteps[currentStep].error_msg ?? "", "error");
       return;
     }
-
+  
     if (onboardingSteps[currentStep].key === "ageSelector") {
       const age = agepickerRef.current ? agepickerRef.current.getSelectedItem() : null;
       setSelectedAge(age!);
@@ -190,25 +153,45 @@ const SetupScreen: React.FC = () => {
       setSelectedHeight(height!);
       console.log("Selected Height:", height);
     }
-
+  
     if (currentStep < onboardingSteps.length - 1) {
       animateTransition(currentStep + 1, 'left');
     } else {
       console.log("Onboarding completed");
-      // TODO if possible add types to onboardingData
-      const onboardingData = {
+  
+      // Ensure all values are properly converted to the expected types
+      const onboardingData: Onboarding = {
         gender: selectedGender,
-        age: selectedAge,
+        age: Number(selectedAge),
         weight: selectedWeight,
         height: selectedHeight,
         goal: selectedGoal,
         activityLevel: selectedActivityLevel,
-        profile,
       };
-
+  
       console.log("Sending onboarding data:", onboardingData);
-    };
-  }
+      try {
+        setLoading(true);
+        
+        const response = await completeOnboarding(onboardingData);
+        
+        showBanner("Onboarding completed successfully!", "success");
+        
+        // Navigate to dashboard or home screen after successful onboarding
+        router.replace("/(home)/home");
+        
+      } catch (error: any) {
+        console.error("Onboarding failed:", error);
+        showBanner(
+          error.response?.data?.message || "Failed to complete onboarding. Please try again.",
+          "error"
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+  
 
   const handleBack = () => {
     if (currentStep > 0) {
@@ -233,8 +216,7 @@ const SetupScreen: React.FC = () => {
         return <step.component selectedGoal={selectedGoal} onGoalSelect={setSelectedGoal} />;
       case "activitySelector":
         return <step.component selectedLevel={selectedActivityLevel} onLevelSelect={setSelectedActivityLevel} />;
-      case "Profile":
-        return <step.component profile={profile} onProfileChange={handleProfileChange} onImageSelect={handleImageSelect}/>;
+     
       default:
         return null;
     }

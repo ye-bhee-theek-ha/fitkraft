@@ -1,13 +1,5 @@
-import { DietaryItem, UserProfile } from '@/constants/types';
-import React, {
-  createContext,
-  useState,
-  useEffect,
-  useContext,
-  PropsWithChildren, // Use PropsWithChildren for type safety on 'children'
-  Dispatch,         // Import Dispatch type
-  SetStateAction    // Import SetStateAction type
-} from 'react';
+import { User, UserProfile } from '@/constants/types';
+import React, { createContext, useState, useEffect } from 'react';
 
 
   interface AppContextType {

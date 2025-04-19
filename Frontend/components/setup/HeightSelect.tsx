@@ -9,7 +9,7 @@ export type HeightSelectorRef = {
   getSelectedItem: () => { whole: number; fraction: number } | null;
 };
 
-const HeightSelector = forwardRef<HeightSelectorRef, HeightSelectorProps>(({ data = Array.from({ length: 81 }, (_, i) => i + 40) }, ref) => {
+const HeightSelector = forwardRef<HeightSelectorRef, HeightSelectorProps>(({ data = Array.from({ length: 81 }, (_, i) => i + 100) }, ref) => {
   const [containerHeight, setContainerHeight] = useState(0);
   const NUM_VISIBLE_ITEMS = 5;
   const ITEM_HEIGHT = containerHeight / NUM_VISIBLE_ITEMS;
@@ -159,7 +159,7 @@ const HeightSelector = forwardRef<HeightSelectorRef, HeightSelectorProps>(({ dat
                 color: 'white',
               }}
             >
-              {weight === 0 ? '' : `${weight}`}
+              {weight === 0 ? '' : `${weight}`} cm
           </Animated.Text>
         </Animated.View>
 
@@ -211,7 +211,7 @@ const HeightSelector = forwardRef<HeightSelectorRef, HeightSelectorProps>(({ dat
     if (ITEM_HEIGHT <= 0) return;
     
     const offsetY = event.nativeEvent.contentOffset.y;
-    scrollIndex.current.whole = Math.round(offsetY / ITEM_HEIGHT);
+    scrollIndex.current.whole = Math.round(offsetY / ITEM_HEIGHT) + 102;
     scrollIndex.current.fraction = Math.round((offsetY % ITEM_HEIGHT) / (ITEM_HEIGHT/10));
   };
 

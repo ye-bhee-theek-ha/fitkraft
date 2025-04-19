@@ -15,9 +15,34 @@ import { Ionicons } from "@expo/vector-icons"
 import axios from 'axios'
 import { useAuth } from '@/context/auth'
 import Constants from 'expo-constants'
-import { MealItem,DietaryItem } from "@/constants/types"
+import { BASE_URL } from "@/constants/baseUrl"
 
+interface Meal {
+    _id: string;
+    Time: string;
+    Name: string;
+    Calories: number;
+    Protein: number;
+    Carbs: number;
+    Fats: number;
+    Ingredients: string[];
+    Instructions: string;
+    Image: string;
+    Category: string;
+    UserCreated_ID: string;
+    completed: boolean;
+}
 
+interface Diet {
+    _id: string;
+    UserId: string;
+    Date: string;
+    Meals: Meal[];
+    TotalCalories: number;
+    TotalProtein: number;
+    TotalCarbs: number;
+    TotalFats: number;
+}
 
 const DietaryList: React.FC = () => {
     const [diet, setDiet] = useState<DietaryItem | null>(null);
@@ -30,16 +55,6 @@ const DietaryList: React.FC = () => {
     
     const { user } = useAuth();
     
-    const getDevServerUrl = () => {
-        const manifest = Constants.manifest2 || Constants.manifest;
-        const hostUri = (manifest as any)?.extra?.expoClient?.hostUri;
-        if (hostUri) {
-            const devServer = hostUri.split(':').slice(0, -1).join(':');
-            return `http://${devServer}:5000`;
-        }
-        return 'http://192.168.1.100:5000';
-    };
-
     useEffect(() => {
         fetchDiet();
         return () => {
@@ -52,9 +67,7 @@ const DietaryList: React.FC = () => {
     const fetchDiet = async () => {
         try {
             setLoading(true);
-            const baseUrl = getDevServerUrl();
-            console.log(baseUrl)
-            const response = await axios.get(`${baseUrl}/dietery/get/user123`, {
+            const response = await axios.get(`${BASE_URL}/dietery/get/user123`, {
                 headers: {
                     Authorization: `Bearer ${user?.token}`,
                 },

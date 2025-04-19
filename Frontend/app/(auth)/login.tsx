@@ -34,6 +34,8 @@ export default function LoginScreen() {
 
       console.log("login", email, password)
       await signIn(email, password);
+      // await signIn("ali@gmail.com", "123");
+
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -48,7 +50,7 @@ export default function LoginScreen() {
 
   return (
     <ScrollView className='bg-primary'>
-      <SafeAreaView className='flex flex-1 mb-8'>
+      <SafeAreaView className='flex flex-1 mb-12'>
         <View className='h-[25%] items-center justify-center'>
           <View className='h-24 w-24 mt-8 bg-primary_light rounded-lg'>
 
@@ -92,6 +94,13 @@ export default function LoginScreen() {
             </View>
 
           </View>
+          {error !== "" && (
+            <View className='w-full mx-12 items-center mt-2'>
+              <Text className='text-error text-extra_small'>
+                {error}
+              </Text>
+            </View>
+          )}
 
           <View className='w-full my-6 items-center'>
             <AppButton
