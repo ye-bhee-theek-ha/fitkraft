@@ -264,7 +264,6 @@ export interface DietaryListProps {
 
 
 export interface DietaryTimeInterfaceProps {
-  diets: DietaryItem[]
   WorkoutTime?: string //HH:mm format
   onMarkDone: () => void
   onAddCustom: () => void

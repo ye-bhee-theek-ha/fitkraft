@@ -12,61 +12,6 @@ import { useMusicPlayer } from "@/context/MusicPlayer"
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window")
 
-export const DietaryData: DietaryItem[] = [
-  {
-    name: "Oatmeal with Fruits",
-    time_name: "breakfast",
-    time: "07:30",
-    fats: 5,
-    proteins: 10,
-    carbohydrates: 30,
-    completed: true,
-  },
-  {
-    name: "Chicken Salad",
-    time_name: "lunch",
-    time: "12:30",
-    fats: 15,
-    proteins: 25,
-    carbohydrates: 10,
-    completed: false,
-  },
-  {
-    name: "Protein Shake",
-    time_name: "pre-workout",
-    fats: 2,
-    proteins: 20,
-    carbohydrates: 5,
-    completed: false,
-  },
-  {
-    name: "Grilled Salmon",
-    time_name: "dinner",
-    time: "19:30",
-    fats: 20,
-    proteins: 30,
-    carbohydrates: 0,
-    completed: true,
-  },
-  {
-    name: "Greek Yogurt",
-    time_name: "snack",
-    time: "10:30",
-    fats: 3,
-    proteins: 15,
-    carbohydrates: 8,
-    completed: true,
-  },
-  {
-    name: "Recovery Smoothie",
-    time_name: "post-workout",
-    fats: 4,
-    proteins: 25,
-    carbohydrates: 35,
-    completed: false,
-  },
-]
-
 const Home = () => {
 
   const { currentSong, togglePlayerExpansion, playbackState, skipToPrevious, togglePlay, skipToNext } = useMusicPlayer();
@@ -120,36 +65,7 @@ const Home = () => {
     transform: [{ translateX: translateX.value }],
   }));
 
-  const workoutData = [
-    {
-      name: "Dumbbell Rows",
-      duration: { minutes: 4, seconds: 15 },
-      repetitions: 5,
-      completed: true,
-      caloriesBurned: 235,
-    },
-    {
-      name: "Dumbbell Rows",
-      duration: { minutes: 2, seconds: 30 },
-      repetitions: 3,
-      completed: false,
-      caloriesBurned: 45,
-    },
-    {
-      name: "Dumbbell Rows",
-      duration: { minutes: 0, seconds: 30 },
-      repetitions: 3,
-      completed: true,
-      caloriesBurned: 45,
-    },
-    {
-      name: "Dumbbell Dumbbell Rows",
-      duration: { minutes: 0, seconds: 30 },
-      repetitions: 3,
-      completed: true,
-      caloriesBurned: 45,
-    },
-  ]
+
 
   const data = [
     { value: 2500, frontColor: "#006DFF", gradientColor: "#009FFF", spacing: 6, label: "Jan" },
@@ -181,11 +97,11 @@ const Home = () => {
               <GestureDetector gesture={panGesture}>
                 <Animated.View className="w-[90%] flex-row mb-6" style={animatedStyle}>
                   <View className="w-full">
-                    <DietaryList diets={DietaryData} />
+                    <DietaryList />
                   </View>
                   <View className="w-20"/>
                   <View className="w-full">
-                    <WorkoutList workouts={workoutData} />
+                    <WorkoutList />
                   </View>
                   <View className="w-20"/>
                   <View className="w-full">

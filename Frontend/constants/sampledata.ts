@@ -1,7 +1,9 @@
-import type { DietaryItem, Exercise, WorkoutData } from "@/constants/types"
+import type { DietaryItem, Exercise, MealItem, WorkoutData } from "@/constants/types"
 
-export const RecommendedMeals: DietaryItem[] = [
+export const RecommendedMeals: MealItem[] = [
   {
+    _id:"1",
+    calories: 300,
     name: "Greek Yogurt with Berries",
     time_name: "breakfast",
     time: "07:30",
@@ -11,6 +13,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Avocado Toast with Egg",
     time_name: "breakfast",
     time: "08:00",
@@ -20,6 +24,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Oatmeal with Nuts and Fruits",
     time_name: "breakfast",
     time: "07:45",
@@ -29,6 +35,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Protein Pancakes",
     time_name: "breakfast",
     time: "08:15",
@@ -38,6 +46,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Spinach and Feta Omelette",
     time_name: "breakfast",
     time: "08:30",
@@ -47,6 +57,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Quinoa Salad with Grilled Chicken",
     time_name: "lunch",
     time: "12:30",
@@ -56,6 +68,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Tuna Wrap with Vegetables",
     time_name: "lunch",
     time: "13:00",
@@ -65,6 +79,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Vegetable Stir-Fry with Tofu",
     time_name: "lunch",
     time: "12:45",
@@ -74,6 +90,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Lentil Soup with Whole Grain Bread",
     time_name: "lunch",
     time: "13:15",
@@ -83,6 +101,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Grilled Salmon with Sweet Potato",
     time_name: "lunch",
     time: "13:30",
@@ -92,6 +112,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Salmon with Sweet Potato",
     time_name: "dinner",
     time: "19:00",
@@ -101,6 +123,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Grilled Chicken with Quinoa and Vegetables",
     time_name: "dinner",
     time: "19:30",
@@ -110,6 +134,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Beef Stir-Fry with Brown Rice",
     time_name: "dinner",
     time: "19:15",
@@ -119,6 +145,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Baked Cod with Roasted Vegetables",
     time_name: "dinner",
     time: "19:45",
@@ -128,6 +156,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Vegetarian Chili with Cornbread",
     time_name: "dinner",
     time: "19:00",
@@ -137,6 +167,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Protein Smoothie",
     time_name: "snack",
     time: "15:30",
@@ -146,6 +178,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Apple Slices with Almond Butter",
     time_name: "snack",
     time: "10:30",
@@ -155,6 +189,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Carrot Sticks with Hummus",
     time_name: "snack",
     time: "16:00",
@@ -164,6 +200,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Greek Yogurt with Granola",
     time_name: "snack",
     time: "11:00",
@@ -173,6 +211,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Hard-Boiled Eggs",
     time_name: "snack",
     time: "15:00",
@@ -182,6 +222,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Banana with Peanut Butter",
     time_name: "pre-workout",
     time: "14:00",
@@ -191,6 +233,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Whole Grain Toast with Avocado",
     time_name: "pre-workout",
     time: "14:30",
@@ -200,6 +244,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Oatmeal with Berries",
     time_name: "pre-workout",
     time: "14:15",
@@ -209,6 +255,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Energy Bar",
     time_name: "pre-workout",
     time: "14:45",
@@ -218,6 +266,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Rice Cakes with Almond Butter",
     time_name: "pre-workout",
     time: "14:00",
@@ -227,6 +277,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Chocolate Protein Shake",
     time_name: "post-workout",
     time: "16:30",
@@ -236,6 +288,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Grilled Chicken and Sweet Potato",
     time_name: "post-workout",
     time: "17:00",
@@ -244,7 +298,8 @@ export const RecommendedMeals: DietaryItem[] = [
     carbohydrates: 30,
     completed: false,
   },
-  {
+  {_id:"1",
+    calories: 300,
     name: "Tuna Salad with Whole Grain Crackers",
     time_name: "post-workout",
     time: "16:45",
@@ -254,6 +309,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Greek Yogurt with Fruit and Granola",
     time_name: "post-workout",
     time: "17:15",
@@ -263,6 +320,8 @@ export const RecommendedMeals: DietaryItem[] = [
     completed: false,
   },
   {
+    _id:"1",
+    calories: 300,
     name: "Cottage Cheese with Pineapple",
     time_name: "post-workout",
     time: "16:30",
