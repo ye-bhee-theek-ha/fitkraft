@@ -22,7 +22,7 @@ const AgeSelect = forwardRef<AgeSelectRef, AgeSelectProps>((_props, ref) => {
   useImperativeHandle(ref, () => ({
     getSelectedItem: () => {
       const index = scrollIndex.current;
-      return index >= 0 && index < ages.length ? ages[index] : 0;
+      return index >= 0 && index < ages.length ? ages[index + 2] : 0;
     },
   }));
 

@@ -1,89 +1,169 @@
-import { useRouter, useSegments } from 'expo-router';
+import { router, useRouter, useSegments } from 'expo-router';
 import axios from 'axios';
 import * as React from 'react';
 import { Onboarding, SignUpData, User, UserProfile } from '@/constants/types';
 import { BASE_URL } from '@/constants/baseUrl';
-import { useApp } from './app';
+import * as SecureStore from 'expo-secure-store';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
-const AuthContext = React.createContext<any>(null);
+// --- Constants for Storage Keys ---
+const TOKEN_KEY = 'user_jwt_token';
+
+interface AuthUser {
+  _id: string;
+  name: string; // Or just name if preferred
+  email: string;
+  onboardingComplete: boolean;
+}
+
+interface AuthState {
+  jwt: string | null;
+  authUser: AuthUser | null; 
+  isAuthenticated: boolean;
+  isLoading: boolean; 
+}
+
+interface AuthContextType extends AuthState {
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (data: SignUpData) => Promise<void>;
+  signOut: () => void;
+  completeOnboarding: (onboardingData: Onboarding) => Promise<any>; //TODO: Define a proper type for the response
+  updateAuthUserOnboardingStatus: (status: boolean) => void;
+}
+
+const AuthContext = React.createContext<AuthContextType | null>(null);
 
   
 export function useAuth() {
-  return React.useContext(AuthContext);
+  const context = React.useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }
 
 export function AuthProvider({ children }: React.PropsWithChildren) {
-  const rootSegment = useSegments()[0];
-  const router = useRouter();
-  const { user, setUser, jwt, setJwt } = useApp();
-
+  
+  const [authState, setAuthState] = React.useState<AuthState>({
+    jwt: null,
+    authUser: null, // Initialize authUser as null
+    isAuthenticated: false,
+    isLoading: true, // Start in loading state
+  });
 
   React.useEffect(() => {
-    console.log(BASE_URL);
-    // if (user === undefined) return;
-    console.log(user)
-    // router.replace("/(setup)/setup")
+    const loadAuthData = async () => {
+      let storedJwt: string | null = null;
+      try {
+        storedJwt = await SecureStore.getItemAsync(TOKEN_KEY);
 
-    if (user === null && rootSegment !== "(auth)") {
-      router.replace("/(auth)/login")
-    }
-  }, [user]);
+        if (storedJwt) {
+          console.log('Stored JWT found. Attempting to verify...');
+
+          const onboardingStatus = await checkOnboardingStatus(storedJwt);
+
+          if (onboardingStatus) { 
+             console.log('Token seems valid. Onboarding status:', onboardingStatus);
+
+             if (onboardingStatus) {
+                setAuthState({
+                    jwt: storedJwt,
+                    authUser: {
+                      onboardingComplete: onboardingStatus.onboardingComplete,
+                      _id: onboardingStatus._id,
+                      name: onboardingStatus.name,
+                      email: onboardingStatus.email,
+                    },
+                    isAuthenticated: true,
+                    isLoading: false,
+                });
+             } else {
+                 throw new Error("Failed to fetch basic user info with stored token.");
+             }
+          } else {
+             throw new Error("Token validation failed (onboarding status check).");
+          }
+        } else {
+          console.log('No stored JWT found.');
+          setAuthState({ jwt: null, authUser: null, isAuthenticated: false, isLoading: false });
+          router.replace("/(auth)/login");
+        }
+      } catch (error) {
+        console.error('Error loading auth data:', error);
+        // Ensure clean state on error
+        if (storedJwt) { // Only clear if a token was involved in the error
+            await SecureStore.deleteItemAsync(TOKEN_KEY);
+        }
+        setAuthState({ jwt: null, authUser: null, isAuthenticated: false, isLoading: false });
+      }
+    };
+
+    loadAuthData();
+  }, []); // Run only once on mount
 
     
   const signIn = async (email: string, password: string) => {
     try {
-        if (!email || !password) {
-            throw new Error('Email and password are required.');
-        }
+      if (!email || !password) {
+        throw new Error('Email and password are required.');
+      }
 
-        const response = await axios.post(`${BASE_URL}/user/login`, {
-            email,
-            password,
-        }, {
-            headers: { "Content-Type": "application/json" },
-        });
+      const response = await axios.post(`${BASE_URL}/user/login`, { email, password }, {
+        headers: { "Content-Type": "application/json" },
+        timeout: 5000,
+      });
 
-        const userData = response.data;
+      const loginData = response.data;
 
-        if (!userData.token) {
-            throw new Error(userData.message || 'Login failed. Please try again.');
-        }
+      if (!loginData.token || !loginData._id) {
+        throw new Error(loginData.message || 'Login failed. Invalid response from server.');
+      }
 
-        const userDetails: UserProfile = {
-            fullName: userData.name, 
-            nickname: userData.nickname || '',
-            email: userData.email,
-            image: null,
-        };
+      const token = loginData.token;
 
-        setUser(userDetails);
-        setJwt(userData.token);
+      const onboardingComplete = await checkOnboardingStatus(token);
 
 
-        console.log("Signed in user:", userDetails);
-        console.log(jwt, "jwt");
-       
-    
+
+      // Create AuthUser from login response
+      const basicUser: AuthUser = {
+        _id: loginData._id,
+        name: loginData.name,
+        email: loginData.email,
+        onboardingComplete: onboardingComplete.onboardingComplete ?? false,
+      };
+
+      // Store JWT
+      await SecureStore.setItemAsync(TOKEN_KEY, token);
+
+      // Update Auth State
+      setAuthState({
+        jwt: token,
+        authUser: basicUser,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      console.log("Signed in user (basic info):", basicUser);
+
+      if (onboardingComplete.onboardingComplete === false) {
+        router.replace("/(setup)/setup");
+      }
+
     } catch (error) {
+      console.error('Sign in error:', error);
+      await SecureStore.deleteItemAsync(TOKEN_KEY);
+      setAuthState(prev => ({ ...prev, isLoading: false, isAuthenticated: false, authUser: null, jwt: null }));
 
-        if (axios.isAxiosError(error)) {
-            const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
-            alert(errorMessage);
-        } else {
-            alert('An unexpected error occurred. Please try again.');
-        }
+      if (axios.isAxiosError(error)) {
+        const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
+      } else if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert('An unexpected error occurred during login.');
+      }
     }
-};
-
-  React.useEffect(() => {
-    if (jwt) {
-        console.log("Updated JWT:", jwt);
-        checkOnboardingStatus(jwt).then((isOnboardingComplete) => {
-          console.log("Onboarding status:", isOnboardingComplete);
-            router.replace(isOnboardingComplete ? "/(home)/home" : "/(setup)/setup");
-        });
-    }
-  }, [jwt]);
+  };
 
 
   const checkOnboardingStatus = async (jwt: string) => {
@@ -98,7 +178,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
 
 
       if (response.data) {
-        return response.data.onboardingComplete;
+        return response.data;
       }
     } catch (error) {
       return false; 
@@ -107,7 +187,6 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
 
 
   const signUp = async (data: SignUpData) => {
-    console.log("Inside signup", data);
     try {
       const response = await axios.post(
         `${BASE_URL}/user/create`,
@@ -124,20 +203,25 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
       );
   
       if (response.data && response.data.message === "User created successfully") {
-        const userData = response.data.user;
+        const creationData = response.data.user;
+        const token = creationData.token;
   
-        const userDetails: UserProfile = {
-          fullName: userData.name,  
-          nickname: userData.nickname,
-          email: userData.email,
+        const basicUser: AuthUser = {
+          _id: creationData._id,
+          name: creationData.name,
+          email: creationData.email,
+          onboardingComplete: false,
         };
+
+        await SecureStore.setItemAsync(TOKEN_KEY, token)
+
+        setAuthState({
+          jwt: token,
+          authUser: basicUser,
+          isAuthenticated: true,
+          isLoading: false,
+        });
       
-        console.log("User created successfully:", response.data);
-        setUser(userDetails);
-        setJwt(userData.token);
-        console.log("signed in user", userDetails);
-        console.log("jwt", userData.token);
-  
         router.replace("/(setup)/setup");
       } else {
         throw new Error(response.data?.message || 'Sign-up failed. Please try again.');
@@ -151,49 +235,121 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
     }
   };
 
+  const updateAuthUserOnboardingStatus = (status: boolean) => {
+    setAuthState(prev => ({
+        ...prev,
+        authUser: prev.authUser ? { ...prev.authUser, onboardingComplete: status } : null,
+    }));
+};
+
   const convertToFloat = (data: { whole: number; fraction?: number }): number => {
     return data.whole + (data.fraction ? data.fraction / 10 : 0);
   };
 
-  const completeOnboarding = async (onboardingData:Onboarding) => {
+  const completeOnboarding = async (onboardingData: Onboarding) => {
+    if (!authState.jwt) {
+      throw new Error("Authentication token is missing.");
+    }
     try {
-
-      const processedData = {
-        ...onboardingData,
-        weight: onboardingData.weight ? convertToFloat(onboardingData.weight) : undefined,
-        height: onboardingData.height ? convertToFloat(onboardingData.height) : undefined,
-      };
-
       const response = await axios.post(
         `${BASE_URL}/user/onboard`,
         {
-          ...processedData
+          ...onboardingData,
+          weight: onboardingData.weight ? convertToFloat(onboardingData.weight) : undefined,
+          height: onboardingData.height ? convertToFloat(onboardingData.height) : undefined,    
         },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${jwt}`
-          }
-        }
+        { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authState.jwt}` } }
       );
-      
-      console.log(response);
-      
-      return response.data;
-    } catch (error:any) {
-      console.error('Onboarding error:', error.response?.data || error.message);
+
+      console.log("Onboarding response:", response.data); // Expects { message: "...", user: { ..., onboardingComplete: true } }
+
+      setAuthState(prev => ({
+        ...prev,
+        authUser: prev.authUser ? { ...prev.authUser, onboardingComplete: true } : null,
+      }));
+
+      console.log("AuthUser onboarding status updated.");
+      return response.data; // Return backend response
+
+    } catch (error: any) {
+      console.error('Onboarding completion error:', error.response?.data || error.message);
+      alert(`Onboarding failed: ${error.response?.data?.message || error.message}`);
       throw error;
     }
   };
 
-  const signOut = () => {
-    router.replace("/(auth)/login");
-    setUser(null);
+  const signOut = async () => {
+    try {
+      await SecureStore.deleteItemAsync(TOKEN_KEY);
+      setAuthState({
+        jwt: null,
+        authUser: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
+    } catch (error) {
+      setAuthState({ jwt: null, authUser: null, isAuthenticated: false, isLoading: false });
+    }
+    finally {
+      router.replace("/(auth)/login")
+    }
   };
-
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut, signUp, completeOnboarding }}>
+    <AuthContext.Provider value={{
+      ...authState,
+      signIn,
+      signUp,
+      signOut,
+      completeOnboarding,
+      updateAuthUserOnboardingStatus,
+    }}>
       {children}
     </AuthContext.Provider>
   );
+}
+
+
+export function AuthNavigator() {
+  const { isAuthenticated, isLoading, authUser } = useAuth();
+  const segments = useSegments();
+  const rootSegment = segments?.[0];
+  const router = useRouter();
+
+  React.useEffect(() => {
+
+    if (rootSegment === undefined) return;
+
+    const onboardingComplete = authUser?.onboardingComplete ?? false;
+    console.log(`(AuthNavigator) Auth State Changed: isLoading=${isLoading}, isAuthenticated=${isAuthenticated}, authUser=${!!authUser}, onboardingComplete=${onboardingComplete}`);
+
+
+    if (isLoading) {
+      console.log("AuthNavigator: Still loading auth state...");
+      return;
+    }
+
+    const isInAuthRoute = rootSegment === '(auth)';
+    const isInSetupRoute = rootSegment === '(setup)';
+
+    if (!isAuthenticated) {
+      if (!isInAuthRoute) {
+        console.log("AuthNavigator: Not authenticated, redirecting to login.");
+        router.replace('/(auth)/login');
+      }
+    } else {
+      if (!onboardingComplete) {
+        if (!isInSetupRoute) {
+          console.log("AuthNavigator: Onboarding incomplete, redirecting to setup.");
+          router.replace('/(setup)/setup');
+        }
+      } else {
+        if (isInAuthRoute || isInSetupRoute) {
+          console.log("AuthNavigator: Onboarding complete, redirecting to home.");
+          router.replace('/(home)/home');
+        }
+      }
+    }
+  }, [isAuthenticated, isLoading, authUser, rootSegment, router]);
+
+  return null;
 }

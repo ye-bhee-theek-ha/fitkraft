@@ -40,7 +40,7 @@ const WorkoutList: React.FC = () => {
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { user } = useAuth(); // Get current user from auth context
+    const { authUser, jwt } = useAuth(); // Get current user from auth context
 
     // Get the development server URL when using Expo
 
@@ -53,9 +53,9 @@ const WorkoutList: React.FC = () => {
         try {
             setLoading(true);
             const baseUrl = BASE_URL;
-            const response = await axios.get(`${baseUrl}/workout/get/user123`, {
+            const response = await axios.get(`${baseUrl}/workout/get/${authUser?._id}`, {
                 headers: {
-                    Authorization: `Bearer ${user?.token}`,
+                    Authorization: `Bearer ${jwt}`,
                 },
                 timeout: 5000,
             });

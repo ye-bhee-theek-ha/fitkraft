@@ -173,6 +173,7 @@ export type MealTimeName = "breakfast" | "lunch" | "dinner" | "snack" | "pre-wor
 export interface DietaryItem {
   UserId: string
   Date: Date
+  Day?: string
   Meals: MealItem[]
   TotalCalories: number
   TotalProtein: number 

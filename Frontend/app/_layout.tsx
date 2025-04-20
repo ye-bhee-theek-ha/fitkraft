@@ -5,7 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
-import { AuthProvider } from '@/context/auth';
+import { AuthNavigator, AuthProvider } from '@/context/auth';
 import { AppProvider } from '@/context/app';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
@@ -55,11 +55,12 @@ function RootLayoutNav() {
   return (
     <>
       <StatusBar style="light"/>
-        <AppProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <AuthNavigator />
+          <AppProvider>
             <Slot/>
-          </AuthProvider>
-        </AppProvider>
+          </AppProvider>
+        </AuthProvider>
     </>
    
   );
