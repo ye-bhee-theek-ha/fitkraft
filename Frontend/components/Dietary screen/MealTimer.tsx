@@ -56,6 +56,8 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
 
   const {dietary} = useApp()
 
+  console.log(dietary)
+
   const [currentTime, setCurrentTime] = useState(new Date());
   const progress = useSharedValue(0);
   const flatListRef = useRef<FlatList<PositionedMealItem>>(null);
@@ -137,10 +139,10 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
   
     // Map diet items with computedTime.
     let items: (MealItem & { computedTime: string})[] = (dietary?.Meals || []).map((diet) => {
-      const time = diet.time || defaultTimes[diet.time_name];
+      const lookupKey = diet.time_name?.toLowerCase() || '';
+      const time = diet.time || defaultTimes[lookupKey] || "12:00";
       return { ...diet, computedTime: time };
-    });
-  
+  });
     // If WorkoutTime is provided, add a new "workout" item.
     if (WorkoutTime) {
       items.push({
@@ -193,6 +195,7 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
   // Modified getIconForTime accepts isSelected to change color.
   const getIconForTime = useCallback((time_name: MealTimeName, isSelected = false, size: number | null = null) => {
     const iconColor = isSelected ? "#FFC1A1" : "white";
+    
     switch (time_name) {
       case "breakfast":
         return <Feather name="sunrise" size={size === null? 26: size} color={iconColor} />;
@@ -274,7 +277,7 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
           <View
             className={`${time_name !== "workout" ? `${bgColorClass} border-2 border-white/20 rounded-full p-2` : ""}`}
           >
-            {getIconForTime(time_name, selectedMealIndex === index)}
+            {getIconForTime(time_name.toLowerCase() as MealTimeName, selectedMealIndex === index)}
           </View>
         </TouchableOpacity>
       </Animated.View>
@@ -485,84 +488,3 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
 };
 
 export default MealTimer;
-
-
-//   {
-//     carbohydrates: 30,
-//     completed: true,
-//     computedTime: "07:30",
-//     fats: 5,
-//     name: "Oatmeal with Fruits",
-//     proteins: 10,
-//     time: "07:30",
-//     time_name: "breakfast",
-//     x: 25,
-//     y: 170.99999999999997,
-//   },
-//   {
-//     carbohydrates: 8,
-//     completed: true,
-//     computedTime: "10:30",
-//     fats: 3,
-//     name: "Greek Yogurt",
-//     proteins: 15,
-//     time: "10:30",
-//     time_name: "snack",
-//     x: 61.90454557049502,
-//     y: 74.83347775862953,
-//   },
-//   {
-//     carbohydrates: 10,
-//     completed: false,
-//     computedTime: "12:30",
-//     fats: 15,
-//     name: "Chicken Salad",
-//     proteins: 25,
-//     time: "12:30",
-//     time_name: "lunch",
-//     x: 118.3888003170824,
-//     y: 39.634087624686714,
-//   },
-//   {
-//     carbohydrates: 5,
-//     completed: false,
-//     computedTime: "16:15",
-//     fats: 2,
-//     name: "Protein Shake",
-//     proteins: 20,
-//     time_name: "pre-workout",
-//     x: 234.07757270260868,
-//     y: 68.7497861828591,
-//   },
-//   {
-//     completed: false,
-//     computedTime: "16:30",
-//     name: "Workout",
-//     time_name: "workout",
-//     x: 211.8111831820431,
-//     y: 103.11774900609144,
-//   },
-//   {
-//     carbohydrates: 35,
-//     completed: false,
-//     computedTime: "17:30",
-//     fats: 4,
-//     name: "Recovery Smoothie",
-//     proteins: 25,
-//     time_name: "post-workout",
-//     x: 260.1192008768393,
-//     y: 103.00000000000003,
-//   },
-//   {
-//     carbohydrates: 0,
-//     completed: true,
-//     computedTime: "19:30",
-//     fats: 20,
-//     name: "Grilled Salmon",
-//     proteins: 30,
-//     time: "19:30",
-//     time_name: "dinner",
-//     x: 277,
-//     y: 171,
-//   },
-// ];

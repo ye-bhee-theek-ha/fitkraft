@@ -3,7 +3,6 @@
 // badges
 
 // Define Badge Type
-export type BadgeType = 'streak' | 'challenge';
 export type BadgeCategory = 'Streak' | 'Challenge';
 
 // Badge Interface
@@ -11,7 +10,6 @@ export interface Badge {
   id: string;
   name: string;
   category: BadgeCategory;
-  type: BadgeType;
   BadgeIconImage: string;
   criteria: string;
   unlockCondition: string;
@@ -39,7 +37,7 @@ export interface User {
 export interface UserProfile {
   _id?: string;
   fullName: string;
-  nickname?: string;
+  nickname: string;
   email: string;
   mobile?: string;
   image?: string | null;
@@ -49,6 +47,7 @@ export interface UserProfile {
   // Include onboarding data
   gender?: 'male' | 'female' | string;
   age?: number;
+  // backend se number type aa rahi maine change kerni
   weight?: WeightOrHeight;
   height?: WeightOrHeight;
   goal?: string;
@@ -220,12 +219,9 @@ export interface VideoItem {
 }
 
 export interface YogaPose {
-  id: string;
   name: string
   description?: string
-  duration?: string
   thumbnail?: string
-  videoUrl?: string
 }
 
 
@@ -248,7 +244,6 @@ export interface WorkoutListProps {
 }
 
 export interface WorkoutProgressListProps {
-  WorkoutDataHistory: WorkoutData[]
   currentDate: Date
 }
 

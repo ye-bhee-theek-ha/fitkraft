@@ -8,12 +8,14 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { LinearGradient } from 'expo-linear-gradient';
 import ProfileForm from '@/components/profile/profileForm';
 import * as ImagePicker from "expo-image-picker";
+import { useAuth } from '@/context/auth';
 
 const { width, height } = Dimensions.get("window");
 
 // Sample data for testing
 const sampleUserData: UserProfile = {
   fullName: 'Madison Smith',
+  nickname: 'Maddy',
   email: 'madisons@example.com',
   mobile: '+1234567890',
   image: null,
@@ -35,6 +37,8 @@ export default function ProfileScreen() {
   // Use Animated.Value for scroll events
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
+
+  const { signOut } = useAuth();
 
   // Define responsive constants based on screen dimensions
   const HEADER_MAX_HEIGHT = height * 0.35; // 35% of screen height
@@ -349,7 +353,8 @@ export default function ProfileScreen() {
                   icon="log-out"
                   title="Logout"
                   onPress={() => {
-                    console.log('Logging out...');
+                    signOut();
+                    router.push('/(auth)/login');
                   }}
                 />
 

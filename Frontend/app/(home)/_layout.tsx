@@ -1,4 +1,4 @@
-"use client"
+// app/(home)/_layout.tsx
 
 import { useCallback, useEffect, useState } from "react"
 import { router, Stack, usePathname } from "expo-router"
@@ -54,16 +54,15 @@ const MemoizedHeader = memo(function MemoizedHeader() {
   }, [])
 
   const handleSearchPress = useCallback(() => {
-    router.push("../(search)")
-
+    router.push("/(search)")
   }, [])
 
   const handleNotificationPress = useCallback(() => {
-    router.push("../(notifications)")
+    router.push("/(notifications)")
   }, [])
 
   const handleProfilePress = useCallback(() => {
-    router.push("../(profile)")
+    router.push("/(profile)")
   }, [])
 
   return (

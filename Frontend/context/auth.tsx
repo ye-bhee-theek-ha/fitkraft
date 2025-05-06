@@ -1,3 +1,5 @@
+// context/auth.tsx
+
 import { router, useRouter, useSegments } from 'expo-router';
 import axios from 'axios';
 import * as React from 'react';
@@ -308,48 +310,68 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
   );
 }
 
-
 export function AuthNavigator() {
   const { isAuthenticated, isLoading, authUser } = useAuth();
   const segments = useSegments();
   const rootSegment = segments?.[0];
   const router = useRouter();
 
+  console.log("isAuthenticated", isAuthenticated);
+  console.log("isLoading", isLoading);
+  console.log("authUser", authUser);
+
   React.useEffect(() => {
-
-    if (rootSegment === undefined) return;
-
-    const onboardingComplete = authUser?.onboardingComplete ?? false;
-    console.log(`(AuthNavigator) Auth State Changed: isLoading=${isLoading}, isAuthenticated=${isAuthenticated}, authUser=${!!authUser}, onboardingComplete=${onboardingComplete}`);
-
-
-    if (isLoading) {
+    if (isLoading || rootSegment === undefined) {
       console.log("AuthNavigator: Still loading auth state...");
       return;
     }
-
+  
+    const onboardingComplete = authUser?.onboardingComplete ?? false;
+    console.log(`(AuthNavigator) Auth State Changed: isLoading=${isLoading}, isAuthenticated=${isAuthenticated}, authUser=${!!authUser}, onboardingComplete=${onboardingComplete}, rootSegment=${rootSegment}`);
+  
     const isInAuthRoute = rootSegment === '(auth)';
     const isInSetupRoute = rootSegment === '(setup)';
+  
+    // if (!isAuthenticated) {
+    //   if (!isInAuthRoute) {
+    //     console.log("AuthNavigator: Not authenticated, redirecting to login.");
+    //     router.replace('/(auth)/login');
+    //   } else {
+    //      console.log("AuthNavigator: Not authenticated, already in auth route.");
+    //   }
+    // } else { 
+    //   if (!onboardingComplete) {
+    //     if (!isInSetupRoute) {
+    //       console.log("AuthNavigator: Onboarding incomplete, redirecting to setup.");
+    //       router.replace('/(setup)/setup');
+    //     } else {
+    //        console.log("AuthNavigator: Onboarding incomplete, already in setup route.");
+    //     }
+    //   } else { 
+    //     if (isInAuthRoute || isInSetupRoute) {
+    //        console.log("AuthNavigator: Authenticated and onboarded, moving away from auth/setup to home.");
+    //        router.replace('/(home)/home');
+    //     } else {
+    //        console.log(`AuthNavigator: Authenticated and onboarded, staying in current main app route: ${segments.join('/')}`);
+    //     }
+    //   }
+    // }
 
+      
     if (!isAuthenticated) {
       if (!isInAuthRoute) {
         console.log("AuthNavigator: Not authenticated, redirecting to login.");
         router.replace('/(auth)/login');
-      }
-    } else {
-      if (!onboardingComplete) {
-        if (!isInSetupRoute) {
-          console.log("AuthNavigator: Onboarding incomplete, redirecting to setup.");
-          router.replace('/(setup)/setup');
-        }
       } else {
-        if (isInAuthRoute || isInSetupRoute) {
-          console.log("AuthNavigator: Onboarding complete, redirecting to home.");
-          router.replace('/(home)/home');
-        }
+         console.log("AuthNavigator: Not authenticated, already in auth route.");
       }
+    } else { 
+           console.log("AuthNavigator: Authenticated and onboarded, moving away from auth/setup to home.");
+           router.replace('/(home)/home');
     }
-  }, [isAuthenticated, isLoading, authUser, rootSegment, router]);
+  }, [isAuthenticated, isLoading, authUser, rootSegment, segments, router]);
+
+  console.log("AuthNavigator info +++>>> : ", isAuthenticated, isLoading, authUser, rootSegment, router);
 
   return null;
 }

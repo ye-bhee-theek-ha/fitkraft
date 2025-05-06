@@ -1,3 +1,5 @@
+//app/(DietaryInfo)/index.tsx
+
 import React, { useRef, useEffect, useState } from 'react';
 import { 
   View, 
@@ -63,7 +65,6 @@ const dietaryItems: DietaryItem[] = [
     proteins: 22,
     carbohydrates: 38,
     servingSize: '1 bowl (250g)',
-    tags: ['high-protein', 'low-calorie', 'quick'],
     description: 'A delicious and protein-rich Greek yogurt bowl topped with fresh berries, honey, and granola. Perfect for starting your day with energy and nutrients.',
     ingredients: [
       '1 cup Greek yogurt',
@@ -96,7 +97,6 @@ const dietaryItems: DietaryItem[] = [
     proteins: 40,
     carbohydrates: 25,
     servingSize: '1 plate (350g)',
-    tags: ['high-protein', 'low-carb', 'meal-prep'],
     description: 'A satisfying grilled chicken salad with mixed greens, vegetables, and a light vinaigrette. High in protein and perfect for a balanced lunch.',
     ingredients: [
       '150g grilled chicken breast',
@@ -133,7 +133,6 @@ const dietaryItems: DietaryItem[] = [
     proteins: 18,
     carbohydrates: 82,
     servingSize: '1 bowl (400g)',
-    tags: ['plant-based', 'high-fiber', 'anti-inflammatory'],
     description: 'A hearty and nutritious bowl featuring roasted sweet potatoes, black beans, and a variety of vegetables and spices for a satisfying dinner.',
     ingredients: [
       '1 medium sweet potato, cubed',
@@ -175,7 +174,6 @@ const dietaryItems: DietaryItem[] = [
     proteins: 30,
     carbohydrates: 35,
     servingSize: '1 glass (450ml)',
-    tags: ['recovery', 'high-protein', 'quick'],
     description: 'A refreshing and protein-packed smoothie perfect for post-workout recovery, helping to rebuild muscles and replenish energy stores.',
     ingredients: [
       '1 scoop whey protein powder (30g)',

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { View, Text, Animated, Pressable } from "react-native"
+import { View, Text, Animated, Pressable, ActivityIndicator } from "react-native"
 import AntDesign from "@expo/vector-icons/AntDesign"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons"
@@ -11,44 +11,37 @@ import { LinearGradient } from "expo-linear-gradient"
 import { useRef, useState, useEffect } from "react"
 import {ScrollView} from "react-native-gesture-handler"
 import { DietaryListProps, TooltipState } from "@/constants/types"
-import { Ionicons } from "@expo/vector-icons"
-import axios from 'axios'
 import { useAuth } from '@/context/auth'
-import Constants from 'expo-constants'
-import { BASE_URL } from "@/constants/baseUrl"
 import { useApp } from "@/context/app"
 
 
 
 const DietaryList: React.FC = () => {
-    const {dietary} = useApp()
 
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { dietary, isDietaryLoading } = useApp(); 
+
     const [tooltip, setTooltip] = useState<TooltipState>({ visible: false, text: "", index: -1 });
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const tooltipTimeout = useRef<NodeJS.Timeout>();
-    const { user } = useAuth();
-
-    console.log(dietary)
-    console.log(loading)
 
     const renderContent = () => {
-        if (!dietary) {
+        if (isDietaryLoading) {
             return (
-                <View className="bg-primary_dark p-3 rounded-3xl">
-                    <Text className="text-white text-center">Loading</Text>
+                <View className="bg-primary_dark p-3 rounded-3xl h-40 flex items-center justify-center">
+                    <ActivityIndicator size="large" color="#FFFFFF" />
+                    <Text className="text-white text-center mt-2">Loading Diet...</Text>
                 </View>
             );
         }
 
-        if (error) {
+        if (!dietary || !dietary.Meals || dietary.Meals.length === 0) {
             return (
-                <View className="bg-primary_dark p-3 rounded-3xl">
-                    <Text className="text-white text-center">{error}</Text>
+                <View className="bg-primary_dark p-3 rounded-3xl h-40 flex items-center justify-center">
+                     <MaterialCommunityIcons name="food-off-outline" size={40} color="#a1a1aa" />
+                     <Text className="text-zinc-400 text-center mt-2">No dietary data found for today.</Text>
                 </View>
             );
-        }
+        } 
 
         return (
             <View className="bg-primary_dark p-3 rounded-3xl">

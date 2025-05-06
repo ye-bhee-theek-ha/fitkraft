@@ -1,3 +1,5 @@
+// context/app.tsx
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { UserProfile, DietaryItem, MealItem, MealTimeName } from '@/constants/types'; // Adjust path as needed
@@ -78,7 +80,7 @@ export const AppProvider: React.FC<React.PropsWithChildren> = ({ children }) => 
   const setSelectedDate = (date: Date) => {
     setAppState(prev => ({ ...prev, selectedDate: date }));
   };
-
+ 
   const fetchUserProfile = async () => {
     if (!isAuthenticated || !jwt) {
       console.log("Cannot fetch profile: User not authenticated or JWT missing.");
@@ -144,7 +146,7 @@ export const AppProvider: React.FC<React.PropsWithChildren> = ({ children }) => 
     setAppState(prev => ({ ...prev, isDietaryLoading: true }));
 
     try {
-      const response = await axios.get(`${BASE_URL}/dietery/get/${userId}?date=${formattedDate}`, {
+      const response = await axios.get(`${BASE_URL}/dietery/get/${userId}?period="all"`, {
         // headers: { Authorization: `Bearer ${jwt}` },
         timeout: 5000,
       });
