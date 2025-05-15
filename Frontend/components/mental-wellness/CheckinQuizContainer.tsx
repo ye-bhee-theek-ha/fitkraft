@@ -115,7 +115,7 @@ const DailyQuizContainer = () => {
 
   return (
     <DailyCheckInQuiz // Your actual quiz component
-      visible={true} // Controlled by local state
+      visible={showQuiz} // Controlled by local state
       onClose={handleQuizClose}
       onComplete={handleQuizComplete}
     />
