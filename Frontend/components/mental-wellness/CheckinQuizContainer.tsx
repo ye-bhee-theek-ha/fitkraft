@@ -13,7 +13,8 @@ const DailyQuizContainer = () => {
   const [showQuiz, setShowQuiz] = useState(false);
   const [isStatusChecked, setIsStatusChecked] = useState(false); // To know when local check is done
 
-  const getFormattedDate = () => {
+  // hello
+  const getFormattedDate = () => { 
     const date = new Date();
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
