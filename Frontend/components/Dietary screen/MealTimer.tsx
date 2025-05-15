@@ -8,7 +8,6 @@ import {
   Dimensions,
   FlatList,
   Pressable,
-  GestureResponderEvent,
 } from "react-native";
 import Svg, { Path, Defs, Mask, Rect } from "react-native-svg";
 import {
@@ -30,8 +29,13 @@ import type { DietaryItem, DietaryTimeInterfaceProps, MealItem, MealTimeName, To
 import EditMealModal from "./EditMealModal"
 import { LinearGradient } from "expo-linear-gradient";
 import { useApp } from "@/context/app";
+import { useAuth } from "@/context/auth";
+import axios, { AxiosError } from "axios";
+import { BASE_URL } from "@/constants/baseUrl";
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
+
+
 
 const { width } = Dimensions.get("window");
 const ITEM_WIDTH = width - 48; // FlatList item width
@@ -42,6 +46,15 @@ const CENTER_Y = SVG_HEIGHT;
 const RADIUS_X = (SVG_WIDTH - 40) / 2;
 const RADIUS_Y = SVG_HEIGHT - 20;
 
+interface BackendMealInput {
+    name: string;
+    calories: number;
+    protein: number; 
+    carbs: number; 
+    fats: number;
+    category: MealTimeName;
+}
+
 type PositionedMealItem = MealItem & {
   computedTime: string;
   x: number;
@@ -50,7 +63,6 @@ type PositionedMealItem = MealItem & {
 
 const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
   WorkoutTime,
-  onMarkDone,
   onAddCustom,
 }) => {
 
@@ -63,7 +75,12 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
   const flatListRef = useRef<FlatList<PositionedMealItem>>(null);
   const [selectedMealIndex, setSelectedMealIndex] = useState(0);
   const [tooltip, setTooltip] = useState<TooltipState>({ visible: false, text: "", index: -1 });
-  
+
+  const [isSubmittingMeal, setIsSubmittingMeal] = useState(false); 
+
+  const { authUser, jwt } = useAuth();
+  const {fetchDietaryData, selectedDate} = useApp();
+
   // Shared value for selected icon index to drive animated scaling/zIndex.
   const selectedIndexSV = useSharedValue(0);
 
@@ -84,6 +101,17 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
     }, 5000);
     return () => clearTimeout(timeoutId);
   }, [fadeValue]);
+
+  const mapFrontendMealToBackendInput = (meal: MealItem): any => {
+    return {
+        Name: meal.name,
+        Calories: meal.calories,
+        Protein: meal.proteins, // Map frontend 'proteins' to backend 'protein'
+        Carbs: meal.carbohydrates, // Map frontend 'carbohydrates' to backend 'carbs'
+        Fats: meal.fats,
+        Category: meal.time_name, // Map frontend 'time_name' to backend 'category'
+    };
+};
 
   useEffect(() => {
     const updateTime = () => {
@@ -365,15 +393,63 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
     setIsEditModalVisible(false)
   };
 
+  const onMarkDone = () => {
+    
+  }
 
-  const handleSaveEditedMeal = useCallback((editedMeal: MealItem) => {
-    // Here you would typically update your state or call an API to save the changes
-    console.log("Saving edited meal:", editedMeal)
-    // For now, we'll just log the edited meal
-  }, [])
 
-  console.log(mealPositions)
+    const handleSaveEditedMeal = useCallback(async (mealDataFromModal: MealItem) => {
+        setIsSubmittingMeal(true);
+        try {
+            let newMealsArray: BackendMealInput[];
+            const currentMeals = dietary?.Meals || [];
+
+            if (editingMeal) { // Editing existing meal
+                newMealsArray = currentMeals.map(m =>
+                    m._id === editingMeal._id
+                        ? mapFrontendMealToBackendInput(mealDataFromModal) // Use updated data
+                        : mapFrontendMealToBackendInput(m) // Keep existing data for others
+                );
+            } else { // Adding new meal
+                newMealsArray = [
+                    ...currentMeals.map(mapFrontendMealToBackendInput),
+                    mapFrontendMealToBackendInput(mealDataFromModal) // Add the new meal
+                ];
+            }
+
+            const payload = {
+                Meals: newMealsArray,
+                userId: authUser?._id, // Backend expects userId in body
+            };
+
+            console.log(`Updating dietary log with payload:`, JSON.stringify(editingMeal, null, 2));
+            console.log(`${BASE_URL}/dietery/update/meal/${editingMeal?._id}`, editingMeal);
+
+            await axios.put(`${BASE_URL}/dietery/update/meal/${editingMeal?._id}`, mapFrontendMealToBackendInput(mealDataFromModal), {
+                headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+            });
+
+            console.log("Success", "Meal saved successfully!");
+            setIsEditModalVisible(false);
+            setEditingMeal(null);
+            // Refresh data for the current day
+            if (authUser?._id) {
+                fetchDietaryData(authUser._id, selectedDate);
+            }
+        } catch (error) {
+            console.error("Error saving meal:", error);
+            const message = error instanceof AxiosError ? error.response?.data?.message || error.message : "Failed to save meal.";
+            console.error("Error", message);
+        } finally {
+            setIsSubmittingMeal(false);
+        }
+    }, [dietary, editingMeal, authUser, jwt, fetchDietaryData, selectedDate]); // Added selectedDate
+
   
+  
+    console.log(
+      `Meal positions: ${mealPositions.map((item) => `${item.name} (${item.x}, ${item.y})`).join(", ")}`
+    )
 
 
   return (
@@ -457,18 +533,21 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
           index,
         })}
       />
+
+
       <View className="flex-row space-x-4 mt-4">
+
         <TouchableOpacity
           onPress={onMarkDone}
           className="flex-1 bg-white/10 border border-white/20 rounded-full py-3 items-center"
         >
           <Text className="text-white font-semibold text-lg">Mark Done</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           onPress={() => {handleEditMealPress()}}
-          className="flex bg-white/10 border border-white/20 rounded-full p-2 items-center"
+          className="flex bg-white/10 border border-white/20 rounded-full p-2 items-center "
         >
-          {/* <Text className="text-white font-semibold text-lg">Add Custom</Text> */}
           <MaterialIcons name="add-circle" size={36} color="white" />
         </TouchableOpacity>
       </View>

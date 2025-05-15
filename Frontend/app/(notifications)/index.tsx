@@ -7,6 +7,9 @@ import AntDesign from "@expo/vector-icons/AntDesign"
 import Feather from "@expo/vector-icons/Feather"
 import { NotificationCategory, Notification } from "@/constants/types"
 import { SafeAreaView } from "react-native-safe-area-context"
+import { useAuth } from "@/context/auth"
+import axios from "axios"
+import { BASE_URL } from "@/constants/baseUrl"
 
 // Icon Mapping for Notification Categories
 const getCategoryIcon = (category: NotificationCategory) => {
@@ -30,15 +33,8 @@ const getCategoryIcon = (category: NotificationCategory) => {
   }
 }
 
-// TODO Fetch Notifications (Simulated Backend Request)
-const fetchNotifications = async (): Promise<Notification[]> => {
-  // Simulated API call - replace with actual backend fetch
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(sampleNotifications)
-    }, 1500)
-  })
-}
+
+
 
 // Notifications Component
 const NotificationsScreen: React.FC = () => {
@@ -46,6 +42,71 @@ const NotificationsScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [filter, setFilter] = useState<NotificationCategory | null>(null)
 
+
+  const {authUser} = useAuth();
+
+  const fetchNotificationsAPI = async (): Promise<any[]> => { // Return type can be more specific if you have an API response type
+    if (!authUser?._id) {
+      console.warn("User ID is missing, cannot fetch notifications.");
+      return []; // Or throw an error
+    }
+    const apiUrl = `GetNotification/user/${authUser._id}`; // Corrected template literal and potential missing authUser._id
+
+    try {
+      const response = await axios.get(`${BASE_URL}/user/${apiUrl}`);
+      console.log("Fetched raw notifications:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching notifications with Axios:', error);
+      // Consolidate error logging as it was repetitive
+      if (error.response) {
+        console.error('Error Data:', error.response.data);
+        console.error('Error Status:', error.response.status);
+      } else if (error.request) {
+        console.error('Error Request:', error.request);
+      } else {
+        console.error('Error Message:', error.message);
+      }
+      throw new Error(`Failed to fetch notifications: ${error.response?.data?.message || error.message || 'Unknown error'}`);
+    }
+  };
+
+
+
+  useEffect(() => {
+    const loadNotifications = async () => {
+      if (!authUser?._id) { // Guard against running if authUser or _id is not yet available
+        setIsLoading(false); // Stop loading if no user ID
+        return;
+      }
+      try {
+        setIsLoading(true);
+        const fetchedNotificationsFromApi = await fetchNotificationsAPI();
+
+        // IMPORTANT: Convert timestamp strings to Date objects
+        // Also, ensure the ID field matches your Notification type (e.g., _id from API vs id in type)
+        const processedNotifications: Notification[] = fetchedNotificationsFromApi.map(
+          (notif: any) => ({ // Use 'any' here or a more specific type for raw API data
+            ...notif,
+            id: notif._id, // Map _id from API to id if your Notification type uses 'id'
+            timestamp: new Date(notif.timestamp), // Convert string to Date object
+          })
+        );
+        setNotifications(processedNotifications);
+      } catch (error) {
+        console.error("Failed to load and process notifications", error);
+        setNotifications([]); // Set to empty on error
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadNotifications();
+  }, [authUser?._id]); // Re-fetch if authUser._id changes (e.g., after login)
+
+
+
+  
   // Format Date/Time
   const formatTimestamp = (timestamp: Date) => {
     const now = new Date()
@@ -61,22 +122,6 @@ const NotificationsScreen: React.FC = () => {
     return 'just now'
   }
 
-  // Fetch Notifications Effect
-  useEffect(() => {
-    const loadNotifications = async () => {
-      try {
-        setIsLoading(true)
-        const fetchedNotifications = await fetchNotifications()
-        setNotifications(fetchedNotifications)
-      } catch (error) {
-        console.error("Failed to fetch notifications", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadNotifications()
-  }, [])
 
   // Filter Notifications
   const filteredNotifications = filter 
@@ -200,21 +245,21 @@ const sampleNotifications: Notification[] = [
     id: "1",
     category: "achievement",
     message: "Congratulations! You've completed 10 consecutive workouts!",
-    timestamp: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
+    timestamp: new Date(Date.now() - 15 * 60 * 1000),
     read: false
   },
   {
     id: "2",
     category: "progress",
     message: "You're 2 lbs away from your weight loss goal!",
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
     read: false
   },
   {
     id: "3",
     category: "system",
     message: "App update available. Please update to the latest version.",
-    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000),
     read: true
   },
   {

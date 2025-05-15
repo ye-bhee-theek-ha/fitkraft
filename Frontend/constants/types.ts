@@ -21,17 +21,17 @@ export interface Badge {
 
 // user
 
+export interface User {
+  fullName: string;
+  nickname?: string;
+  image?: string | null;
+}
 
 export interface WeightOrHeight {
   whole: number;
   fraction: number;
 }
 
-export interface User {
-  fullName: string;
-  nickname?: string;
-  image?: string | null;
-}
 
 
 export interface UserProfile {
@@ -70,7 +70,7 @@ export interface SignUpData extends UserProfile {
 
 export interface ProfileFormProps {
   profile: UserProfile;
-  onProfileChange: (field: string, value: string) => void;
+  onProfileChange: (key: keyof UserProfile, value: string) => void;
   onImageSelect: () => void;
 }
 
@@ -171,6 +171,7 @@ export interface WeeklyWorkoutTasksProps {
 export type MealTimeName = "breakfast" | "lunch" | "dinner" | "snack" | "pre-workout" | "post-workout" | "workout"
 export interface DietaryItem {
   UserId: string
+  id: string
   Date: Date
   Day?: string
   Meals: MealItem[]
@@ -261,7 +262,6 @@ export interface DietaryListProps {
 
 export interface DietaryTimeInterfaceProps {
   WorkoutTime?: string //HH:mm format
-  onMarkDone: () => void
   onAddCustom: () => void
 }
 

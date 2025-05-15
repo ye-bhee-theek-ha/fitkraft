@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 export default function NotificationsLayout() {
   return (
     <Stack
-      initialRouteName='notifications'
+      initialRouteName='index'
       screenOptions={{
         headerShown: false,
         animation: 'slide_from_right',
@@ -14,7 +14,7 @@ export default function NotificationsLayout() {
         },
       }}
     >
-      <Stack.Screen name="notifications" />
+      <Stack.Screen name="index" />
     </Stack>
   );
 }

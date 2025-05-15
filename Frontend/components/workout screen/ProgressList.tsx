@@ -14,7 +14,7 @@ import { BASE_URL } from "@/constants/baseUrl"; // Import BASE_URL
 import { Duration, WorkoutType } from "@/constants/types"; // Import shared types
 
 // --- Local Types (Matching structure expected from API Response) ---
-interface PopulatedExercise {
+export interface PopulatedExercise {
     _id: string;
     name: string;
     type?: WorkoutType;
@@ -26,7 +26,7 @@ interface PopulatedExercise {
     caloriesBurned?: number;
 }
 
-interface WorkoutSession {
+export interface WorkoutSession {
     _id: string;
     userId: string;
     date: string; // Date as string from backend/prop
@@ -36,7 +36,7 @@ interface WorkoutSession {
 }
 
 // Define WorkoutDayProgress locally or import if defined elsewhere
-interface WorkoutDayProgress {
+export interface WorkoutDayProgress {
   date: Date;
   day?: string;
   current?: boolean; // Represents if the date is the most recent in the history provided
@@ -44,7 +44,7 @@ interface WorkoutDayProgress {
 }
 
 // Props interface - No longer needs workoutHistory
-interface WorkoutProgressListProps {
+export interface WorkoutProgressListProps {
   // Removed workoutHistory prop
   currentDate: Date; // Used for initial selection
 }

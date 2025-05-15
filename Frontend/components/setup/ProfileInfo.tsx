@@ -1,17 +1,8 @@
 import { Text, View, TouchableOpacity, TextInput, Image, ScrollView } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
+import { ProfileFormProps, UserProfile } from "@/constants/types";
 
-interface ProfileFormProps {
-  profile: {
-    fullName: string
-    nickname: string
-    email: string
-    mobile: string
-    image: string | null
-  }
-  onProfileChange: (field: string, value: string) => void
-  onImageSelect: () => void
-}
+
 
 export default function ProfileForm({ profile, onProfileChange, onImageSelect }: ProfileFormProps) {
   return (

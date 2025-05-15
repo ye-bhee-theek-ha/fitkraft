@@ -1,8 +1,21 @@
 import React from "react";
 import { Text, View, TouchableOpacity, TextInput, Image, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ProfileFormProps } from "@/constants/types";
+import { ProfileFormProps, WeightOrHeight } from "@/constants/types";
 
+export function formatWeightHeight(value: WeightOrHeight | undefined): string {
+  if (!value) {
+    return "";
+  }
+  if (value.fraction > 0) {
+    // Ensure fraction is single digit if needed, or handle as is
+    // const fractionString = value.fraction.toString().substring(0, 1); // Example: take only first digit
+    const fractionString = value.fraction.toString()
+    return `${value.whole}.${fractionString}`;
+  } else {
+    return value.whole.toString();
+  }
+}
 
 export default function ProfileForm({ profile, onProfileChange, onImageSelect }: ProfileFormProps) {
     return (
@@ -91,9 +104,9 @@ export default function ProfileForm({ profile, onProfileChange, onImageSelect }:
               <Text className="text-white text-btn_title mb-1">Weight (kg)</Text>
               <View className="flex-row space-x-2">
                 <TextInput
-                  value={profile.weight?.whole ? profile.weight.whole.toString() : ""}
-                  onChangeText={(value) => onProfileChange("weightWhole", value)}
-                  placeholder="Whole"
+                  value={formatWeightHeight(profile.weight)}
+                  onChangeText={(value) => onProfileChange("weight", value)}
+                  placeholder=""
                   placeholderTextColor="#687791"
                   keyboardType="numeric"
                   className="bg-white text-primary_dark text-text font-Display px-3 py-2 rounded-2xl border-2 border-primary_light flex-1"
@@ -106,9 +119,9 @@ export default function ProfileForm({ profile, onProfileChange, onImageSelect }:
               <Text className="text-white text-btn_title mb-1">Height (cm)</Text>
               <View className="flex-row space-x-2">
                 <TextInput
-                  value={profile.height?.whole ? profile.height.whole.toString() : ""}
-                  onChangeText={(value) => onProfileChange("heightWhole", value)}
-                  placeholder="Whole"
+                  value={formatWeightHeight(profile.height)}
+                  onChangeText={(value) => onProfileChange("height", value)}
+                  placeholder=""
                   placeholderTextColor="#687791"
                   keyboardType="numeric"
                   className="bg-white text-primary_dark text-text font-Display px-3 py-2 rounded-2xl border-2 border-primary_light flex-1"

@@ -24,7 +24,6 @@ export default function DietaryScreen() {
       <View className="p-4 space-y-4">
         <MealTimer
           WorkoutTime="16:30" 
-          onMarkDone={handleMarkDone}
           onAddCustom={handleAddCustom}
         />
         <View className="h-4" />

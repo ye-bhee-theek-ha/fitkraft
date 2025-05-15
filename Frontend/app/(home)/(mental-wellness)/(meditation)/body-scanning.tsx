@@ -28,11 +28,11 @@ export default function BodyScanMeditation() {
   return (
     <View className="flex-1 items-center justify-center bg-green-100 p-6">
       <Text className="text-heading font-bold mb-4 text-white">Body Scan Meditation</Text>
-      <ScrollView className="w-full p-4 bg-white border-2 border-accent rounded-lg shadow-md" style={{ maxHeight: 400 }}>
-        <Text className="text-lg text-gray-700 mb-2">
+      <ScrollView className="w-full p-4 text-white border-2 border-accent rounded-lg shadow-md" style={{ maxHeight: 400 }}>
+        <Text className="text-lg text-white mb-2">
           Sitting comfortably, take a deep breath in through the nose, and out through the mouth. As you breathe out, close your eyes and notice how your body feels.
         </Text>
-        <Text className="text-lg text-gray-700 mb-2">
+        <Text className="text-lg text-white mb-2">
           Start at the top of your head and mentally scan down through your body, noticing areas of comfort and discomfort. You're not trying to change anything — just observing.
         </Text>
         <View className="h-6"/>

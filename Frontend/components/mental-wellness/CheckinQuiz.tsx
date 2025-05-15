@@ -15,6 +15,8 @@ import Slider from '@react-native-community/slider';
 import { StatusBar } from 'expo-status-bar';
 import { Activity, DailyCheckInQuizProps, Emotion } from '@/constants/types';
 import { EMOTIONS, MENTAL_HEALTH_ACTIVITIES } from '@/constants/sampledata';
+import { BASE_URL } from '@/constants/baseUrl';
+import { useAuth } from '@/context/auth';
 
 const { width } = Dimensions.get('window');
 // Calculate the container width (90% of device width capped at 400)
@@ -85,22 +87,33 @@ const DailyCheckInQuiz = ({ visible, onClose, onComplete }: DailyCheckInQuizProp
     );
   };
 
+  const {authUser} = useAuth()
+
   // Send results to backend server
   const sendResultsToServer = async (finalScore: number) => {
     try {
-      const response = await fetch('https://your-api-endpoint.com/quiz-results', {
-        method: 'POST',
+      const response = await fetch(`${BASE_URL}/UpdateMentalScore/${authUser?._id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          score: finalScore,
-          activities: activities.filter(a => a.checked).map(a => a.label),
+          // score: finalScore,
+          physical_Activity: activities.filter(a => a.checked).map(a => a.label),
           emotion: selectedEmotion?.label || null,
           rating: mentalHealthRating,
           timestamp: new Date().toISOString(),
         }),
       });
+      console.log(
+        JSON.stringify({
+          score: finalScore,
+          activities: activities.filter(a => a.checked).map(a => a.label),
+          emotion: selectedEmotion?.label || null,
+          rating: mentalHealthRating,
+          timestamp: new Date().toISOString(),
+        })
+      )
       const data = await response.json();
       console.log('Results sent successfully:', data);
     } catch (error) {

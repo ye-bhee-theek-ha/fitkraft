@@ -8,7 +8,6 @@ import type { MealItem, MealTimeName } from "@/constants/types"
 import { RecommendedMeals } from "@/constants/sampledata"
 import { useAnimatedStyle, useSharedValue, withTiming, Easing } from "react-native-reanimated"
 import { LinearGradient } from "expo-linear-gradient"
-import { GestureDetector, Gesture } from "react-native-gesture-handler"
 import Animated from "react-native-reanimated" // Import Animated
 
 interface EditMealModalProps {
@@ -39,31 +38,23 @@ const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSav
   const [recommendations, setRecommendations] = useState(RecommendedMeals)
   const fadeValue = useSharedValue(0)
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     onSave(editedMeal)
     onClose()
-  }
+  }, [onSave, editedMeal, onClose])
 
-  const handleInputChange = (field: keyof MealItem, value: string) => {
+  const handleInputChange = useCallback((field: keyof MealItem, value: string) => {
     setEditedMeal((prev) => ({
       ...prev,
       [field]: field === "name" || field === "time" || field === "time_name" ? value : Number(value),
       time_name: field === "time_name" ? (value as MealTimeName) : prev.time_name || "breakfast",
     }))
-  }
+  }, [])
 
   const refreshRecommendations = useCallback(() => {
     const shuffled = [...RecommendedMeals].sort(() => 0.5 - Math.random())
     setRecommendations(shuffled.slice(0, 30))
   }, [])
-
-  const recommendRandom = useCallback(() => {
-    const filteredMeals = editedMeal.time_name
-      ? RecommendedMeals.filter((m) => m.time_name === editedMeal.time_name)
-      : RecommendedMeals
-    const randomMeal = filteredMeals[Math.floor(Math.random() * filteredMeals.length)]
-    setEditedMeal(randomMeal)
-  }, [editedMeal.time_name])
 
   const showTooltip = useCallback(
     (text: string) => {
@@ -102,7 +93,7 @@ const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSav
         <View className="m-4">
           <View className="flex-row justify-between items-center mb-4 ">
             <Text className="text-white text-lg font-semibold">{item.name}</Text>
-            <Text className="text-gray-400">{item.time}</Text>
+            {/* <Text className="text-gray-400">{item.time}</Text> */}
           </View>
           <View className="flex-row justify-end space-x-2 mr-4">
             <Pressable
@@ -145,7 +136,7 @@ const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSav
     </TouchableOpacity>
   )
 
-  const renderListHeader = () => (
+  const listHeaderComponent = useMemo(() => (
     <>
       <View className="flex-row justify-between items-center mb-6">
         <Text className="text-white text-2xl font-bold">{isAdding ? "Add Meal" : "Edit Meal"}</Text>
@@ -176,7 +167,7 @@ const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSav
             <Feather name="chevron-down" size={20} color="white" />
           </TouchableOpacity>
         </View>
-        <View>
+        {/* <View>
           <Text className="text-white mb-2">Time</Text>
           <TextInput
             className="bg-white/10 text-white p-3 rounded-xl"
@@ -185,7 +176,7 @@ const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSav
             placeholder="HH:MM"
             placeholderTextColor="rgba(255,255,255,0.5)"
           />
-        </View>
+        </View> */}
         <View className="flex-row justify-between">
           <View className="w-[30%]">
             <Text className="text-white mb-2">Fats</Text>
@@ -238,18 +229,18 @@ const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSav
         </TouchableOpacity>
       </View>
     </>
-  )
+  ), [isAdding, onClose, editedMeal, handleInputChange, refreshRecommendations, setShowCategoryPicker])
 
-  const renderListFooter = () => (
-    <View className="flex-row justify-between items-center mt-4">
-      <TouchableOpacity onPress={recommendRandom} className="bg-accent/20 py-3 px-4 rounded-full items-center">
+  const listFooterComponent = useMemo(() => (
+    <View className="flex-row justify-end items-center mt-4">
+      {/* <TouchableOpacity onPress={recommendRandom} className="bg-accent/20 py-3 px-4 rounded-full items-center">
         <Text className="text-white font-semibold">Recommend Random</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       <TouchableOpacity onPress={handleSave} className="bg-accent py-3 px-6 rounded-full items-center">
         <Text className="text-primary font-bold text-lg">{isAdding ? "Add Meal" : "Save Changes"}</Text>
       </TouchableOpacity>
     </View>
-  )
+  ), [handleSave, isAdding])
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
@@ -263,31 +254,23 @@ const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSav
     return () => backHandler.remove()
   }, [isVisible, onClose])
 
-  const swipeDownGesture = Gesture.Pan().onStart((event) => {
-    if (event.translationY > 0) {
-      onClose()
-    }
-  })
-
   return (
     <Modal visible={isVisible} animationType="slide" transparent>
-      <GestureDetector gesture={swipeDownGesture}>
-        <View className="flex-1 justify-end bg-black/50">
-          <View className="bg-primary_dark rounded-t-3xl p-6 h-5/6">
-            <FlatList
-              data={filteredRecommendations}
-              renderItem={renderRecommendedMeal}
-              keyExtractor={(item) => item.name}
-              ListHeaderComponent={renderListHeader}
-              ListFooterComponent={renderListFooter}
-              ListEmptyComponent={
-                <Text className="text-white text-center">No recommendations available for this category.</Text>
-              }
-              showsVerticalScrollIndicator={false}
-            />
-          </View>
+      <View className="flex-1 justify-end bg-black/50">
+        <View className="bg-primary_dark rounded-t-3xl p-6 h-5/6">
+          <FlatList
+            data={filteredRecommendations}
+            renderItem={renderRecommendedMeal}
+            keyExtractor={(item) => item.name}
+            ListHeaderComponent={listHeaderComponent}
+            ListFooterComponent={listFooterComponent}
+            ListEmptyComponent={
+              <Text className="text-white text-center">No recommendations available for this category.</Text>
+            }
+            showsVerticalScrollIndicator={false}
+          />
         </View>
-      </GestureDetector>
+      </View>
       <Modal visible={showCategoryPicker} transparent animationType="fade">
         <View className="flex-1 justify-center items-center bg-black/50">
           <View className="bg-primary_dark rounded-xl w-4/5 max-h-96">

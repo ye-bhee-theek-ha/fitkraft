@@ -19,7 +19,7 @@ export default function MentalWellnessLayout() {
         <Stack.Screen name="sleep" />
         <Stack.Screen name="RelaxingVideos" />
       </Stack>
-      {/* <DailyQuizContainer /> */}
+      <DailyQuizContainer />
     </>
   );
 }

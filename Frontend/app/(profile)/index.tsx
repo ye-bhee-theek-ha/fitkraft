@@ -3,29 +3,106 @@ import { View, Text, Image, TouchableOpacity, Animated, ScrollView, Dimensions }
 import { Stack, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome6, Ionicons } from '@expo/vector-icons';
-import { UserProfile } from '@/constants/types';
+import { UserProfile, WeightOrHeight } from '@/constants/types';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { LinearGradient } from 'expo-linear-gradient';
 import ProfileForm from '@/components/profile/profileForm';
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from '@/context/auth';
+import { useApp } from '@/context/app';
+import axios from 'axios';
+import { BASE_URL } from '@/constants/baseUrl';
 
 const { width, height } = Dimensions.get("window");
 
-// Sample data for testing
-const sampleUserData: UserProfile = {
-  fullName: 'Madison Smith',
-  nickname: 'Maddy',
-  email: 'madisons@example.com',
-  mobile: '+1234567890',
-  image: null,
-  gender: 'female',
-  age: 28,
-  weight: { whole: 75, fraction: 0 },
-  height: { whole: 165, fraction: 0 },
-  goal: 'Weight loss',
-  activityLevel: 'Moderate'
-};
+export function parseWeightHeightString(value: string | number | undefined): WeightOrHeight | undefined {
+    // Return undefined for null or undefined input
+    if (value === undefined || value === null) {
+        return undefined;
+    }
+
+    let wholePart: number;
+    let fractionPart: number = 0; // Default fraction to 0
+
+    // Handle string input
+    if (typeof value === 'string') {
+        const trimmedValue = value.trim();
+        // Return undefined for empty strings
+        if (trimmedValue === "") {
+            return undefined;
+        }
+        // Split the string by the decimal point
+        const parts = trimmedValue.split('.');
+        // Parse the whole number part
+        wholePart = parseInt(parts[0], 10);
+
+        // If there's a decimal part, parse the first digit after the decimal
+        if (parts.length > 1 && parts[1].length > 0) {
+            const firstFractionDigit = parseInt(parts[1].substring(0, 1), 10);
+            // Only assign if the first fraction digit is a valid number
+            if (!isNaN(firstFractionDigit)) {
+                fractionPart = firstFractionDigit;
+            }
+        }
+    // Handle number input
+    } else if (typeof value === 'number') {
+        // Return undefined for non-finite numbers (NaN, Infinity)
+        if (!isFinite(value)) {
+             return undefined;
+        }
+        // Get the integer part
+        wholePart = Math.floor(value);
+
+        // Calculate the first decimal place value
+        // Multiply by 10, get the fractional part, round to handle floating point issues
+        const decimalPart = Math.round((value - wholePart) * 10);
+        // Assign if positive, otherwise keep 0
+        fractionPart = decimalPart > 0 ? decimalPart : 0;
+
+    } else {
+        // Should not be reached due to type signature, but acts as a safeguard
+        return undefined;
+    }
+
+    // Final validation: Ensure the whole part is a valid number
+    if (isNaN(wholePart)) {
+        return undefined; // Parsing failed
+    }
+
+    // Ensure fraction is a single digit (0-9) - clamp the value
+    const validFraction = Math.min(Math.max(fractionPart, 0), 9);
+
+    // Return the structured object
+    return {
+        whole: wholePart,
+        fraction: validFraction,
+    };
+}
+
+export function parseAgeString(value: string | undefined): number | undefined {
+    // Return undefined for null, undefined, or empty/whitespace strings
+    if (value === undefined || value === null || value.trim() === "") {
+        return undefined;
+    }
+    // Parse the trimmed string as an integer (base 10)
+    const num = parseInt(value.trim(), 10);
+    // Return the number if valid, otherwise undefined
+    return isNaN(num) ? undefined : num;
+}
+
+export function weightOrHeightToNumber(value: WeightOrHeight | undefined | null): number {
+    if (!value || typeof value.whole !== 'number') {
+        // Handle cases where value or value.whole is not a valid number
+        return 0; // Or throw an error, or return NaN, depending on desired handling
+    }
+    // Ensure fraction is treated as a single decimal digit
+    const fractionValue = typeof value.fraction === 'number' && !isNaN(value.fraction)
+        ? Math.min(9, Math.max(0, value.fraction)) // Clamp fraction to 0-9
+        : 0;
+
+    return value.whole + (fractionValue / 10);
+}
+
 
 export default function ProfileScreen() {
   const [userData, setUserData] = useState<UserProfile | null>(null);
@@ -38,13 +115,16 @@ export default function ProfileScreen() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const { signOut } = useAuth();
+  const { signOut, jwt } = useAuth();
+  const { userProfile, fetchUserProfile } = useApp()
 
   // Define responsive constants based on screen dimensions
   const HEADER_MAX_HEIGHT = height * 0.35; // 35% of screen height
   const HEADER_MIN_HEIGHT = height * 0.12; // 15% of screen height
   const IMAGE_MAX_SIZE = width * 0.25;     // 25% of screen width
   const IMAGE_MIN_SIZE = width * 0.15;     // 15% of screen width
+
+  const [contentHeight, setContentHeight] = useState<number>(0);
 
   // Interpolated header height
   const headerHeight = scrollY.interpolate({
@@ -126,7 +206,7 @@ export default function ProfileScreen() {
   const profileSelected_Header_X = profileSelected
     ? scrollY.interpolate({
         inputRange: [0, 100, 120],
-        outputRange: [0, 0, 350],
+        outputRange: [0, 0, 550],
         extrapolate: 'clamp'
       })
     : scrollY.interpolate({
@@ -138,18 +218,22 @@ export default function ProfileScreen() {
   // Simulate fetching data from backend
   useEffect(() => {
     const fetchUserData = async () => {
+      setIsLoading(true);
       try {
-        // Replace with actual API call when ready
-        setUserData(sampleUserData);
-        setNewUserData(sampleUserData);
-        setIsLoading(false);
+
+        console.log("Fetched user data for profile:", userProfile);
+        setUserData(userProfile);
+        setNewUserData(userProfile);
       } catch (error) {
         console.error('Error fetching user data:', error);
+        // Handle error (e.g., show error message)
+      } finally {
         setIsLoading(false);
       }
     };
     fetchUserData();
-  }, []);
+  }, [userProfile]); // Re-fetch if authUser changes
+
 
   // Listen to scrollY updates to update the onTop state
   useEffect(() => {
@@ -173,27 +257,65 @@ export default function ProfileScreen() {
   }, [onTop]);
 
   // Profile form handlers
-  const onProfileSave = () => {
+  const onProfileSave = async () => {
     setUserData(NewUserData);
+    console.log("body for save")
+    console.log({...NewUserData, height: weightOrHeightToNumber(NewUserData?.height), weight: weightOrHeightToNumber(NewUserData?.weight) })
+    try {
+      const response = await axios.patch(`${BASE_URL}/user/update`,
+      { ...NewUserData, height: weightOrHeightToNumber(NewUserData?.height), weight: weightOrHeightToNumber(NewUserData?.weight) },
+      {  
+        headers: { Authorization: `Bearer ${jwt}` },
+        timeout: 5000,
+      });
+    } catch (error) {
+      console.error('AppProvider: Failed to update full user profile:', error);
+    }
   };
 
-  const onProfileChange = (key: string, value: string) => {
+const onProfileChange = (key: keyof UserProfile, value: string) => {
     setNewUserData((prev) => {
-      if (!prev) return prev;
-      if (key === "weightWhole") {
-        return { ...prev, weight: { whole: parseFloat(value) || 0, fraction: prev.weight?.fraction || 0 } };
-      } else if (key === "weightFraction") {
-        return { ...prev, weight: { whole: prev.weight?.whole || 0, fraction: parseFloat(value) || 0 } };
-      } else if (key === "heightWhole") {
-        return { ...prev, height: { whole: parseFloat(value) || 0, fraction: prev.height?.fraction || 0 } };
-      } else if (key === "heightFraction") {
-        return { ...prev, height: { whole: prev.height?.whole || 0, fraction: parseFloat(value) || 0 } };
-      } else if (key === "age") {
-        return { ...prev, age: parseInt(value) || 0 };
-      }
-      return { ...prev, [key]: value };
+        if (!prev) return prev; // Should not happen if initialized correctly
+
+        // Create a copy to modify
+        const updatedProfile = { ...prev };
+
+        // Use a switch or if/else if to handle parsing based on the key
+        switch (key) {
+            case 'age':
+                updatedProfile.age = parseAgeString(value); // Parse string to number | undefined
+                break;
+            case 'weight':
+                updatedProfile.weight = parseWeightHeightString(value);
+                break;
+            case 'height':
+                updatedProfile.height = parseWeightHeightString(value);
+                break;
+
+            case 'fullName':
+            case 'nickname':
+            case 'email':
+            case 'mobile':
+            case 'image':
+            case 'gender': // Assuming gender is stored as string in state based on form
+            case 'goal':   // Assuming goal is stored as string in state
+            case 'activityLevel': // Assuming activityLevel is stored as string in state
+                // We assert the key is a valid key of UserProfile that accepts string
+                updatedProfile[key] = value;
+                break;
+            // Add cases for any other specific fields if needed
+            // Default case could log an error for unhandled keys if strictness is desired
+            default:
+                 console.warn(`onProfileChange received unhandled key: ${key}`);
+                 // Decide if you want to handle unknown keys or ignore them
+                 // updatedProfile[key as keyof UserProfile] = value; // Less safe option
+                 break;
+
+        }
+        return updatedProfile;
     });
-  };
+};
+
 
   const handleImageSelect = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -261,7 +383,7 @@ export default function ProfileScreen() {
         ref={scrollViewRef}
         className="z-10 w-full flex relative"
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingTop: HEADER_MAX_HEIGHT}}
+        contentContainerStyle={{ paddingTop: HEADER_MAX_HEIGHT, paddingBottom: 85}}
         onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
         scrollEventThrottle={16}
       >
@@ -315,7 +437,7 @@ export default function ProfileScreen() {
                 {userData?.email}
               </Animated.Text>
               <Animated.Text className="text-slate-400" style={{ opacity: detailOpacity }}>
-                {userData?.mobile}
+                Goal: {userData?.goal}
               </Animated.Text>
             </Animated.View>
           </TouchableOpacity>
@@ -330,7 +452,7 @@ export default function ProfileScreen() {
               <Animated.View className="relative mb-8" style={{ height: height * 0.1, transform: [{ scale: statsScale }, { translateY: statsYIndex }] }}>
                 <View className="flex-row bg-[#2d3748] border-2 border-white/50 rounded-lg p-4 w-[90%] self-center">
                   <View className="flex-1 items-center justify-center">
-                    <Text className="text-[16px] font-bold text-white mb-1">{userData?.weight?.whole} Kg</Text>
+                    <Text className="text-[16px] font-bold text-white mb-1">{(userData?.weight?.fraction || 0)+ (userData?.weight?.whole || 0)} Kg</Text>
                     <Text className="text-[12px] text-slate-400">Weight</Text>
                   </View>
                   <View className="flex-1 items-center justify-center border-l-2 border-r-2 border-white/50">
@@ -338,7 +460,7 @@ export default function ProfileScreen() {
                     <Text className="text-[12px] text-slate-400">Years Old</Text>
                   </View>
                   <View className="flex-1 items-center justify-center">
-                    <Text className="text-[16px] font-bold text-white mb-1">{userData?.height?.whole} CM</Text>
+                    <Text className="text-[16px] font-bold text-white mb-1">{(userData?.height?.fraction || 0) + (userData?.height?.whole || 0)} CM</Text>
                     <Text className="text-[12px] text-slate-400">Height</Text>
                   </View>
                 </View>
@@ -358,16 +480,17 @@ export default function ProfileScreen() {
                   }}
                 />
 
-                <MenuOption icon="star-outline" title="Favorites" onPress={() => router.push('./(profile)/favorites')} />
+                {/* <MenuOption icon="star-outline" title="Favorites" onPress={() => router.push('./(profile)/favorites')} /> */}
 
                 <MenuOption icon="restaurant-outline" title="My Food Plan" onPress={() => router.push('./(profile)/foodPlan')} />
 
-                <MenuOption icon="notifications-outline" title="My Workout Plan" source="FontAwesome6" onPress={() => router.push('./(profile)/workoutPlan')} />
+                <MenuOption icon="list" title="My Workout Plan" onPress={() => router.push('./(profile)/workoutPlan')} />
               
               </Animated.View>
             </View>
           </Animated.View>
         )}
+        <View className='h-[70px]' />
       </Animated.ScrollView>
     </SafeAreaView>
   );

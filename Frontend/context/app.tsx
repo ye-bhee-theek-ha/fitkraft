@@ -2,7 +2,7 @@
 
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { UserProfile, DietaryItem, MealItem, MealTimeName } from '@/constants/types'; // Adjust path as needed
+import { UserProfile, DietaryItem, MealItem, MealTimeName, WeightOrHeight } from '@/constants/types'; // Adjust path as needed
 import { BASE_URL } from '@/constants/baseUrl'; // Adjust path as needed
 import { useAuth } from './auth'; // Import useAuth from your AuthProvider file
 
@@ -54,6 +54,64 @@ export interface DietaryResponse {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+export function parseWeightHeightString(value: string | number | undefined): WeightOrHeight | undefined {
+    if (value === undefined || value === null) {
+        return undefined;
+    }
+
+    let wholePart: number;
+    let fractionPart: number = 0; // Default fraction to 0
+
+    if (typeof value === 'string') {
+        const trimmedValue = value.trim();
+        if (trimmedValue === "") {
+            return undefined; // Empty string is invalid
+        }
+        const parts = trimmedValue.split('.');
+        wholePart = parseInt(parts[0], 10);
+
+        // If there's a decimal part, try to parse the first digit
+        if (parts.length > 1 && parts[1].length > 0) {
+            const firstFractionDigit = parseInt(parts[1].substring(0, 1), 10);
+            if (!isNaN(firstFractionDigit)) {
+                fractionPart = firstFractionDigit;
+            }
+            // If parts[1] exists but starts with non-digit, fraction remains 0
+        }
+
+    } else if (typeof value === 'number') {
+        if (!isFinite(value)) {
+             return undefined; // Handle NaN, Infinity, -Infinity
+        }
+        wholePart = Math.floor(value);
+
+        // Calculate fraction based on the first decimal place
+        // Multiply by 10, get remainder, round to handle floating point issues
+        const decimalPart = Math.round((value - wholePart) * 10);
+        fractionPart = decimalPart > 0 ? decimalPart : 0; // Ensure non-negative
+
+    } else {
+        // Should not be reached with current type signature but good for safety
+        return undefined;
+    }
+
+    // Validate the results
+    if (isNaN(wholePart)) {
+        return undefined; // Parsing failed
+    }
+
+    // Ensure fraction is a single digit (0-9)
+    const validFraction = Math.min(Math.max(fractionPart, 0), 9);
+
+    return {
+        whole: wholePart,
+        fraction: validFraction,
+    };
+}
+
+
+
+
 export function useApp() {
   const context = useContext(AppContext);
   if (!context) {
@@ -103,14 +161,27 @@ export const AppProvider: React.FC<React.PropsWithChildren> = ({ children }) => 
          fullName: userData.name,
          nickname: userData.nickname,
          email: userData.email,
-         height: userData.height,
-         weight: userData.weight,
+
+        weight: typeof userData.weight === 'number'
+            ? parseWeightHeightString(userData.weight) 
+            : (userData.weight && typeof userData.weight === 'object' 
+                ? { ...userData.weight } 
+                : undefined), 
+
+        height: typeof userData.height === 'number'
+            ? parseWeightHeightString(userData.height) 
+            : (userData.height && typeof userData.height === 'object' 
+                ? { ...userData.height } 
+                : undefined),
+
          age: userData.age,
          gender: userData.gender,
          goal: userData.goal,
          activityLevel: userData.activityLevel,
          bmi: userData.bmi,
          bmr: userData.bmr,
+         mobile: userData.mobile || null,
+         image: userData.image || null,
          onboardingComplete: !!(userData.height && userData.weight && userData.age && userData.gender && userData.goal && userData.activityLevel),
        };
 
@@ -170,6 +241,7 @@ export const AppProvider: React.FC<React.PropsWithChildren> = ({ children }) => 
 
         const mappedDietary: DietaryItem = {
           UserId: apiData.UserId,
+          id: apiData._id,
           Date: new Date(apiData.Date),
           Meals: mappedMeals,
           TotalCalories: apiData.TotalCalories,

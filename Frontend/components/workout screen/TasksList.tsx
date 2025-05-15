@@ -152,7 +152,6 @@ const TasksList: React.FC = () => {
         setIsModalVisible(false); setEditingExercise(null); setSubmitError(null);
     };
 
-    
 
     // --- Save Exercise (Add or Edit) ---
     const handleSaveExercise = async (formData: ExerciseFormData) => {

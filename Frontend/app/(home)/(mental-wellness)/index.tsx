@@ -18,12 +18,12 @@ const menuItems = [
     image: require('@/assets/images/MentalWellness/Index/music.png'),
     route: "/(mental-wellness)/music",
   },
-  {
-    title: "Sleep",
-    description: "Techniques, Benefits, and\na Beginner's How-To",
-    image: require('@/assets/images/MentalWellness/Index/sleep.png'),
-    route: "/(mental-wellness)/sleep",
-  },
+  // {
+  //   title: "Sleep",
+  //   description: "Techniques, Benefits, and\na Beginner's How-To",
+  //   image: require('@/assets/images/MentalWellness/Index/sleep.png'),
+  //   route: "/(mental-wellness)/sleep",
+  // },
   {
     title: "Relaxing Videos",
     description: "Techniques, Benefits, and\na Beginner's How-To",

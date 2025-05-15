@@ -7,141 +7,29 @@ import { FontAwesome6 } from "@expo/vector-icons"
 import type { MusicItem, Song } from "@/constants/types"
 import { useMusicPlayer } from "@/context/MusicPlayer"
 import { useCallback, useEffect, useState } from "react"
+import axios from "axios"
+import { BASE_URL } from "@/constants/baseUrl"
 
-const API_BASE_URL = "https://your-api-domain.com/api";
 
-const songData: Song[] = [
-  {
-    id: '1',
-    title: 'Tu Rehti Hai',
-    artist: 'Aditya Rikhari',
-    audioUrl:
-      'https://dl.dropboxusercontent.com/scl/fi/51n6p7zwibuzeke4sz3wn/Aditya-Rikhari-Tu-Rehti-Hai-Studio-Version-MP3_160K.mp3?rlkey=9tet0rnogkssveae15cv5xl3t&e=1&st=yf1eqzd2',
-    duration: 158766, // milliseconds
-    image: "",
-    playlistName: ""
-  },
-  {
-    id: '2',
-    title: 'FAASLE',
-    artist: 'Aditya Rikhari',
-    audioUrl:
-      'https://dl.dropboxusercontent.com/scl/fi/wb8xqswy2c9xtreyiavcq/Aditya-Rikhari-FAASLE-MP3_160K.mp3?rlkey=96gcsdqdaonthq6wymd2epbnd&e=1&st=8g32pcx9',
-    duration: 142500, // estimated duration
-    image: "",
-    playlistName: ""
-  },
-  {
-    id: '3',
-    title: 'SAMJHO NA NASAMAJH',
-    artist: 'Aditya Rikhari',
-    audioUrl:
-      'https://dl.dropboxusercontent.com/scl/fi/allbjzq9q4giu3q74k8a3/Aditya-Rikhari-SAMJHO-NA-NASAMAJH-MP3_160K.mp3?rlkey=u2j8i51tjj62vpjylzsiogby8&e=1&st=6nijme8j',
-    duration: 168200, // estimated duration
-    image: "",
-    playlistName: ""
-  },
-  {
-    id: '4',
-    title: 'Ik Lamha',
-    artist: 'Azaan Sami Khan ft. Maya Ali',
-    audioUrl:
-      'https://dl.dropboxusercontent.com/scl/fi/adsjz4m0jbtefwwqtivl2/Azaan-Sami-Khan-Ik-Lamha-ft.-Maya-Ali-Official-Lyric-Video-MP3_160K.mp3?rlkey=fm24xq94ep03rxnq27hskih5p&e=1&st=kxw9kw0p',
-    duration: 174500, // estimated duration
-    image: "",
-    playlistName: ""
-  }
-]
+interface BackendSongItem {
+  _id: string;
+  title: string;
+  artist: string;
+  audioUrl: string;
+  duration: number;
+  image: string;
+  playlistName: string; // This is the playlistName from the backend song item
+}
 
-// Define the Relaxing Music playlist (songs in a custom order)
-export const relaxingPlaylist: Song[] = [
-  {
-    ...songData[0],
-    image: 'https://i.scdn.co/image/ab67616d0000b27327b2e970c158a0727a9e0261',
-    playlistName: 'Relaxing Music'
-  },
-  {
-    ...songData[3],
-    image: 'https://i.scdn.co/image/ab67616d0000b273d2aaf635815c265aa1ecdecc',
-    playlistName: 'Relaxing Music'
-  },
-  {
-    ...songData[1],
-    image: 'https://i.scdn.co/image/ab67616d0000b2737d214af8499aa95ad220f573',
-    playlistName: 'Relaxing Music'
-  },
-  {
-    ...songData[2],
-    image: 'https://i.scdn.co/image/ab67616d0000b273e6f407c7f3a0ec98845e4431',
-    playlistName: 'Relaxing Music'
-  }
-]
+interface PlaylistApiResponse {
+  _id: string;
+  name: string; // The name of the playlist (e.g., "Nature")
+  musicItems: BackendSongItem[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
 
-// Define the Nature Sounds playlist (custom order)
-export const naturePlaylist: Song[] = [
-  {
-    ...songData[3],
-    image: 'https://i.scdn.co/image/ab67616d0000b273d2aaf635815c265aa1ecdecc',
-    playlistName: 'Nature Sounds'
-  },
-  {
-    ...songData[2],
-    image: 'https://i.scdn.co/image/ab67616d0000b273e6f407c7f3a0ec98845e4431',
-    playlistName: 'Nature Sounds'
-  },
-  {
-    ...songData[0],
-    image: 'https://i.scdn.co/image/ab67616d0000b27327b2e970c158a0727a9e0261',
-    playlistName: 'Nature Sounds'
-  },
-  {
-    ...songData[1],
-    image: 'https://i.scdn.co/image/ab67616d0000b2737d214af8499aa95ad220f573',
-    playlistName: 'Nature Sounds'
-  }
-]
-
-// Define the Exercise Music playlist (custom order)
-export const exercisePlaylist: Song[] = [
-  {
-    ...songData[1],
-    image: 'https://i.scdn.co/image/ab67616d0000b2737d214af8499aa95ad220f573',
-    playlistName: 'Exercise Music'
-  },
-  {
-    ...songData[0],
-    image: 'https://i.scdn.co/image/ab67616d0000b27327b2e970c158a0727a9e0261',
-    playlistName: 'Exercise Music'
-  },
-  {
-    ...songData[3],
-    image: 'https://i.scdn.co/image/ab67616d0000b273d2aaf635815c265aa1ecdecc',
-    playlistName: 'Exercise Music'
-  },
-  {
-    ...songData[2],
-    image: 'https://i.scdn.co/image/ab67616d0000b273e6f407c7f3a0ec98845e4431',
-    playlistName: 'Exercise Music'
-  }
-]
-
-// Function to fetch playlists (simulated here)
-// In production, this would be a real API call
-const fetchPlaylists = async (): Promise<{[key: string]: Song[]}> => {
-  // In a real app, you would do something like:
-  // const response = await fetch(`${API_BASE_URL}/playlists`);
-  // const data = await response.json();
-  // return data;
-  
-  // For now, just simulate a network delay and return our hardcoded data
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  return {
-    "Relaxing Music": relaxingPlaylist,
-    "Nature": naturePlaylist,
-    "Exercise Music": exercisePlaylist
-  };
-};
 
 const MusicScreen = () => {
   const { 
@@ -157,24 +45,90 @@ const MusicScreen = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Categories for your music items
-  const musicItems: MusicItem[] = [
+
+
+
+  const musicItems = [
     {
       title: "Relaxing Music",
+
       description: "Calm your mind with soothing melodies",
+
       image: require("@/assets/images/MentalWellness/Music/relaxing music.png"),
+  
     },
+
     {
       title: "Nature",
+
       description: "Connect with the outdoors through natural sounds",
+
       image: require("@/assets/images/MentalWellness/Music/nature.png"),
     },
+
     {
       title: "Exercise Music",
+
       description: "Energetic beats to power your workout",
+
       image: require("@/assets/images/MentalWellness/Music/workout music.png"),
     },
   ];
+
+
+
+  const fetchPlaylists = async (): Promise<{ [key: string]: Song[] }> => {
+  const playlistNames = ["Relaxing Music", "Nature", "Exercise Music"];
+  const fetchedPlaylists: { [key: string]: Song[] } = {};
+
+  try {
+    // Create an array of promises for fetching each playlist
+    const playlistPromises = playlistNames.map(async (name) => {
+      // URL encode the playlist name in case it has spaces or special characters
+      const encodedName = encodeURIComponent(name);
+      const response = await axios.get<PlaylistApiResponse>(`${BASE_URL}/mentalwellness/GetPlaylist/${encodedName}`);
+      
+      if (response.data && response.data.musicItems) {
+        // Transform backend song items to frontend Song type
+        // The `playlistName` for the Song object will be the category key (e.g., "Relaxing Music")
+        const songs: Song[] = response.data.musicItems.map(item => ({
+          id: item._id, // Map _id to id
+          title: item.title,
+          artist: item.artist,
+          audioUrl: item.audioUrl,
+          duration: item.duration,
+          image: item.image,
+          playlistName: name, // Assign the category name as playlistName for the Song object
+        }));
+        return { name, songs };
+      } else {
+        console.warn(`No music items found for playlist: ${name} or unexpected response format.`);
+        return { name, songs: [] }; // Return empty array if no items or bad format
+      }
+    });
+
+    // Wait for all playlist fetches to complete
+    const results: { name: string; songs: Song[] }[] = await Promise.all<{ name: string; songs: Song[] }>(
+      playlistPromises
+    );
+
+    // Populate the fetchedPlaylists object
+    results.forEach(result => {
+      if (result) {
+        fetchedPlaylists[result.name] = result.songs;
+      }
+    });
+
+    return fetchedPlaylists;
+
+  } catch (error) {
+    console.error("Error fetching playlists from backend:", error);
+    // If one playlist fails, we might still want to return others,
+    // or handle this more gracefully depending on requirements.
+    // For now, rethrow or return empty to indicate failure.
+    throw new Error("Failed to fetch one or more playlists.");
+  }
+};
 
   // Fetch playlists on component mount
   useEffect(() => {
