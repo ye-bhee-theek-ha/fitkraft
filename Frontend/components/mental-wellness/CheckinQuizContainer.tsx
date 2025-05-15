@@ -3,9 +3,17 @@ import { View, ActivityIndicator } from 'react-native';
 import DailyCheckInQuiz from './CheckinQuiz';
 const DailyQuizContainer = () => {
   const [showQuiz, setShowQuiz] = useState(false);
-  const [isStatusChecked, setIsStatusChecked] = useState(false);
+  const [isStatusChecked, setIsStatusChecked] = useState(false); // To know when local check is done
 
-  // Check with backend if today's quiz has already been conducted
+  // hello
+  const getFormattedDate = () => { 
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   useEffect(() => {
     const checkQuizStatus = async () => {
       try {
