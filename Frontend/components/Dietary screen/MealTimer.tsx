@@ -26,9 +26,10 @@ import Animated, {
   useAnimatedStyle,
   Easing,
 } from "react-native-reanimated";
-import type { DietaryItem, DietaryTimeInterfaceProps, MealTimeName, TooltipState,MealItem } from "@/constants/types";
+import type { DietaryItem, DietaryTimeInterfaceProps, MealItem, MealTimeName, TooltipState } from "@/constants/types";
 import EditMealModal from "./EditMealModal"
 import { LinearGradient } from "expo-linear-gradient";
+import { useApp } from "@/context/app";
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
@@ -41,15 +42,23 @@ const CENTER_Y = SVG_HEIGHT;
 const RADIUS_X = (SVG_WIDTH - 40) / 2;
 const RADIUS_Y = SVG_HEIGHT - 20;
 
+type PositionedMealItem = MealItem & {
+  computedTime: string;
+  x: number;
+  y: number;
+};
+
 const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
-  diets,
   WorkoutTime,
   onMarkDone,
   onAddCustom,
 }) => {
+
+  const {dietary} = useApp()
+
   const [currentTime, setCurrentTime] = useState(new Date());
   const progress = useSharedValue(0);
-  const flatListRef = useRef<FlatList<DietaryItem>>(null);
+  const flatListRef = useRef<FlatList<PositionedMealItem>>(null);
   const [selectedMealIndex, setSelectedMealIndex] = useState(0);
   const [tooltip, setTooltip] = useState<TooltipState>({ visible: false, text: "", index: -1 });
   const [diet, setDiet] = useState<DietaryItem | null>(null);
@@ -128,7 +137,7 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
     }
   
     // Map diet items with computedTime.
-    let items: (DietaryItem & { computedTime: string })[] = diets.map((diet) => {
+    let items: (MealItem & { computedTime: string})[] = (dietary?.Meals || []).map((diet) => {
       const time = diet.time || defaultTimes[diet.time_name];
       return { ...diet, computedTime: time };
     });
@@ -140,6 +149,11 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
         time_name: "workout" as MealTimeName, // note: "workout" is not in the original union.
         computedTime: WorkoutTime,
         completed: false,
+        _id: "0",
+        calories: 0,
+        fats: 0,
+        proteins: 0,
+        carbohydrates: 0,
       });
     }
   
@@ -162,7 +176,7 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
     return items.map((item) => {
       const [hours, minutes] = item.computedTime.split(":").map(Number);
       const totalMinutes = hours * 60 + minutes;
-      const prog = (totalMinutes - startMinutes) / totalArc;
+      const prog = totalArc === 0 ? 0.5 : (totalMinutes - startMinutes) / totalArc;
       const angle = Math.PI * prog;
       let x, y;
       if (item.time_name === "workout") {
@@ -175,7 +189,7 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
       }
       return { ...item, x, y };
     });
-  }, [diets, WorkoutTime]);
+  }, [dietary, WorkoutTime]);
   
   // Modified getIconForTime accepts isSelected to change color.
   const getIconForTime = useCallback((time_name: MealTimeName, isSelected = false, size: number | null = null) => {
@@ -269,7 +283,7 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
   }
 
   const renderMealItem = useCallback(
-    ({ item: diet, index }: { item: DietaryItem & { x: number; y: number }; index: number }) => (
+    ({ item: diet, index }: { item: PositionedMealItem; index: number }) => (
       <View key={index} style={{ width: ITEM_WIDTH }}>
         <View className="flex-col justify-center items-center flex-1 h-28">
           <View className="flex-row w-full justify-end">
@@ -279,7 +293,7 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
               </View>
             )}
             <View className="w-1" />
-            {diet.fats && (
+            {diet.fats != null && (
               <Pressable
               onLongPress={() => showTooltip("Fats", index)}
               className="bg-white/10 border border-white/30 px-1.5 py-0.5 rounded-md flex flex-row items-center ml-1"
@@ -289,7 +303,7 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
               </Pressable>
             )}
             <View className="w-1" />
-            {diet.proteins && (
+            {diet.proteins != null && (
               <Pressable
               onLongPress={() => showTooltip("Proteins", index)}
               className="bg-white/10 border border-white/30 px-1.5 py-0.5 rounded-md flex flex-row items-center ml-1"
@@ -336,10 +350,10 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
 // 
 
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
-  const [editingMeal, setEditingMeal] = useState<DietaryItem | null>(null)
+  const [editingMeal, setEditingMeal] = useState<MealItem | null>(null)
 
 
-  const handleEditMealPress = useCallback((meal?: DietaryItem) => {
+  const handleEditMealPress = useCallback((meal?: MealItem) => {
     meal && setEditingMeal(meal)
     setIsEditModalVisible(true)
   }, [])
@@ -350,11 +364,13 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
   };
 
 
-  const handleSaveEditedMeal = useCallback((editedMeal: DietaryItem) => {
+  const handleSaveEditedMeal = useCallback((editedMeal: MealItem) => {
     // Here you would typically update your state or call an API to save the changes
     console.log("Saving edited meal:", editedMeal)
     // For now, we'll just log the edited meal
   }, [])
+
+  console.log(mealPositions)
   
 
 
@@ -393,7 +409,7 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
         <View className="absolute top-0 left-0 right-0 bottom-0">
           {mealPositions.map((meal, index) => (
             <MealIcon
-            key={index}
+            key={meal._id || index}  
             time={meal.time ?? "12:00"}
             time_name={meal.time_name}
             coordinates={{ x: meal.x, y: meal.y }}
@@ -422,7 +438,7 @@ const MealTimer: React.FC<DietaryTimeInterfaceProps> = ({
         ref={flatListRef}
         data={mealPositions}
         renderItem={renderMealItem}
-        keyExtractor={(_, index) => index.toString()}
+        keyExtractor={(item) => item._id} 
         horizontal
         showsHorizontalScrollIndicator={false}
         pagingEnabled

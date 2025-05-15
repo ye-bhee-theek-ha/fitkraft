@@ -16,37 +16,13 @@ import axios from 'axios'
 import { useAuth } from '@/context/auth'
 import Constants from 'expo-constants'
 import { BASE_URL } from "@/constants/baseUrl"
+import { useApp } from "@/context/app"
 
-interface Meal {
-    _id: string;
-    Time: string;
-    Name: string;
-    Calories: number;
-    Protein: number;
-    Carbs: number;
-    Fats: number;
-    Ingredients: string[];
-    Instructions: string;
-    Image: string;
-    Category: string;
-    UserCreated_ID: string;
-    completed: boolean;
-}
 
-interface Diet {
-    _id: string;
-    UserId: string;
-    Date: string;
-    Meals: Meal[];
-    TotalCalories: number;
-    TotalProtein: number;
-    TotalCarbs: number;
-    TotalFats: number;
-}
 
 const DietaryList: React.FC = () => {
-    const [diet, setDiet] = useState<DietaryItem | null>(null);
-    const [meals, setMeals] = useState<MealItem[]>([]);
+    const {dietary} = useApp()
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [tooltip, setTooltip] = useState<TooltipState>({ visible: false, text: "", index: -1 });
@@ -54,53 +30,15 @@ const DietaryList: React.FC = () => {
     const tooltipTimeout = useRef<NodeJS.Timeout>();
     
     const { user } = useAuth();
-    
-    useEffect(() => {
-        fetchDiet();
-        return () => {
-            if (tooltipTimeout.current) {
-                clearTimeout(tooltipTimeout.current);
-            }
-        };
-    }, []);
 
-    const fetchDiet = async () => {
-        try {
-            setLoading(true);
-            const response = await axios.get(`${BASE_URL}/dietery/get/user123`, {
-                headers: {
-                    Authorization: `Bearer ${user?.token}`,
-                },
-                timeout: 5000,
-            });
-            console.log('Diet Response:', response.data);
-            const dietData: DietaryItem = response.data[0] || null;
-            const mealsData: MealItem[] = dietData?.Meals || [];
-            setDiet(dietData);
-            setMeals(mealsData);
-            setError(null);
-        } catch (err) {
-            if (axios.isAxiosError(err)) {
-                const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch diet';
-                setError(errorMessage);
-                console.error('Error details:', {
-                    message: err.message,
-                    response: err.response?.data,
-                    status: err.response?.status,
-                });
-            } else {
-                setError('An unexpected error occurred');
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
+    console.log(dietary)
+    console.log(loading)
 
     const renderContent = () => {
-        if (loading) {
+        if (!dietary) {
             return (
                 <View className="bg-primary_dark p-3 rounded-3xl">
-                    <Text className="text-white text-center">Loading diet...</Text>
+                    <Text className="text-white text-center">Loading</Text>
                 </View>
             );
         }
@@ -127,18 +65,18 @@ const DietaryList: React.FC = () => {
                         className="absolute bottom-0 left-0 h-full w-full"
                     />
                     <ScrollView
-                        scrollEnabled={meals.length > 3}
+                        scrollEnabled={dietary.Meals.length > 3}
                         showsVerticalScrollIndicator={false}
-                        className={`${meals.length > 3 ? "h-52" : ""}`}
+                        className={`${dietary.Meals.length > 3 ? "h-52" : ""}`}
                     >
-                        {meals.map((meal, index) => (
+                        {dietary.Meals.map((meal, index) => (
                             <View key={index} className="flex-row h-16 items-center justify-between p-3 mb-1 rounded-lg">
                                 <View className="flex-row items-center flex-1 h-full">
-                                    <View className="h-full flex justify-end flex-col mr-2">{GetIconForTime(meal.Category)}</View>
+                                    <View className="h-full flex justify-end flex-col mr-2">{GetIconForTime(meal.time_name)}</View>
 
                                     <View className="flex-1">
                                         <View className="flex-row justify-between mb-1">
-                                            <Text className="text-gray-400 font-semibold text-medium ml-2">{meal.Category}</Text>
+                                            <Text className="text-gray-400 font-semibold text-medium ml-2">{meal.time_name}</Text>
 
                                             <View className="flex-row">
                                                 {meal.completed && (
@@ -149,43 +87,43 @@ const DietaryList: React.FC = () => {
 
                                                 <View className="w-1" />
 
-                                                {meal.Fats && (
+                                                {meal && (
                                                     <Pressable
                                                         onLongPress={() => showTooltip("Fats", index)}
                                                         className="bg-white/10 border border-white/30 px-1.5 py-0.5 rounded-md flex flex-row items-center"
                                                     >
                                                         <MaterialIcons name="water-drop" size={10} color="#6dd5fa" />
-                                                        <Text className="text-white text-icon_text ml-1">{meal.Fats}</Text>
+                                                        <Text className="text-white text-icon_text ml-1">{meal.fats}</Text>
                                                     </Pressable>
                                                 )}
 
                                                 <View className="w-1" />
 
-                                                {meal.Protein && (
+                                                {meal.proteins && (
                                                     <Pressable
                                                         onLongPress={() => showTooltip("Proteins", index)}
                                                         className="bg-white/10 border border-white/30 px-1.5 py-0.5 rounded-md flex flex-row items-center"
                                                     >
                                                         <MaterialCommunityIcons name="chemical-weapon" size={10} color="#7bffba" />
-                                                        <Text className="text-white text-icon_text ml-1">{meal.Protein}</Text>
+                                                        <Text className="text-white text-icon_text ml-1">{meal.proteins}</Text>
                                                     </Pressable>
                                                 )}
 
                                                 <View className="w-1" />
 
-                                                {meal.Carbs && (
+                                                {meal.carbohydrates && (
                                                     <Pressable
                                                         onLongPress={() => showTooltip("Carbohydrates", index)}
                                                         className="bg-white/10 border border-white/30 px-1.5 py-0.5 rounded-md flex flex-row items-center"
                                                     >
                                                         <FontAwesome6 name="jar-wheat" size={10} color="#fff3d4" />
-                                                        <Text className="text-white text-icon_text ml-1">{meal.Carbs}</Text>
+                                                        <Text className="text-white text-icon_text ml-1">{meal.carbohydrates}</Text>
                                                     </Pressable>
                                                 )}
                                             </View>
                                         </View>
                                         <View className="flex-row items-center relative">
-                                            <Text className="text-white font-semibold text-btn_title pr-2">{meal.Name}</Text>
+                                            <Text className="text-white font-semibold text-btn_title pr-2">{meal.name}</Text>
                                             {tooltip.visible && tooltip.index === index && (
                                                 <Animated.View
                                                     style={{

@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useCallback, useMemo, useEffect } from "react"
 import { View, Text, TextInput, TouchableOpacity, Modal, FlatList, Pressable, BackHandler } from "react-native"
 import { Feather, MaterialIcons, MaterialCommunityIcons, FontAwesome6 } from "@expo/vector-icons"
-import type { DietaryItem, MealTimeName } from "@/constants/types"
+import type { MealItem, MealTimeName } from "@/constants/types"
 import { RecommendedMeals } from "@/constants/sampledata"
 import { useAnimatedStyle, useSharedValue, withTiming, Easing } from "react-native-reanimated"
 import { LinearGradient } from "expo-linear-gradient"
@@ -14,22 +14,24 @@ import Animated from "react-native-reanimated" // Import Animated
 interface EditMealModalProps {
   isVisible: boolean
   onClose: () => void
-  onSave: (meal: DietaryItem) => void
-  meal: DietaryItem | null
+  onSave: (meal: MealItem) => void
+  meal: MealItem | null
   isAdding: boolean
 }
 
 const mealCategories: MealTimeName[] = ["breakfast", "lunch", "dinner", "snack", "pre-workout", "post-workout"]
 
 const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSave, meal, isAdding }) => {
-  const [editedMeal, setEditedMeal] = useState<DietaryItem>(
+  const [editedMeal, setEditedMeal] = useState<MealItem>(
     meal || {
+      _id: "",
       name: "",
       time_name: "breakfast",
       time: "",
       fats: 0,
       proteins: 0,
       carbohydrates: 0,
+      calories: 0,
       completed: false,
     },
   )
@@ -42,7 +44,7 @@ const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSav
     onClose()
   }
 
-  const handleInputChange = (field: keyof DietaryItem, value: string) => {
+  const handleInputChange = (field: keyof MealItem, value: string) => {
     setEditedMeal((prev) => ({
       ...prev,
       [field]: field === "name" || field === "time" || field === "time_name" ? value : Number(value),
@@ -83,7 +85,7 @@ const EditMealModal: React.FC<EditMealModalProps> = ({ isVisible, onClose, onSav
   }, [recommendations, editedMeal.time_name])
 
   const renderRecommendedMeal = useCallback(
-    ({ item }: { item: DietaryItem }) => (
+    ({ item }: { item: MealItem }) => (
       <TouchableOpacity
         key={item.name}
         className="bg-primary_dark/50  rounded-xl mb-4 border-2 border-white/25"
